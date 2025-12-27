@@ -1,0 +1,6 @@
+@SEBIZ_HostAddress = http://localhost:5182
+
+GET {{SEBIZ_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
