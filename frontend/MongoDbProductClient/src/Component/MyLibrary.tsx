@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import API from '../API/api';
-import type { Game } from '../Interface/baseInterface';
+import type { Game, User } from '../Interface/baseInterface';
 
 export const MyLibrary = () => {
     const [games, setGames] = useState<Game[]>([]);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [playMessage, setPlayMessage] = useState('');
@@ -18,8 +19,9 @@ export const MyLibrary = () => {
                     return;
                 }
 
-                const user = JSON.parse(userString);
-                const gameIds = user.ownedGamesIds || [];
+                const userData: User = JSON.parse(userString);
+                setUser(userData);
+                const gameIds = userData.ownedGamesIds || [];
 
                 if (gameIds.length === 0) {
                     setLoading(false);
@@ -80,7 +82,14 @@ export const MyLibrary = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8">My Library</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-800">My Library</h1>
+                {user && (
+                    <div className="text-xl font-semibold text-green-600">
+                        Balance: ${user.balance?.toFixed(2)}
+                    </div>
+                )}
+            </div>
             {playMessage && <p className="mb-4 text-green-600">{playMessage}</p>}
             {games.length === 0 ? (
                 <p>You don't own any games yet.</p>

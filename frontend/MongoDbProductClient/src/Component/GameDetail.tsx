@@ -43,6 +43,27 @@ export const GameDetail = () => {
         }
     };
 
+    const handlePurchase = async () => {
+        const token = localStorage.getItem('token');
+        const userString = localStorage.getItem('user');
+        if (!token || !userString) {
+            setMessage('You must be logged in to purchase games.');
+            return;
+        }
+        if (!id) return;
+
+        const user = JSON.parse(userString);
+        try {
+            await API.post(`/User/${user.id}/purchase/${id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMessage('Game purchased successfully!');
+        } catch (error) {
+            setMessage('Failed to purchase game. You may not have enough funds or already own the game.');
+            console.error('Error purchasing game:', error);
+        }
+    };
+
     if (loading) {
         return <div className="text-center mt-10">Loading...</div>;
     }
@@ -67,8 +88,8 @@ export const GameDetail = () => {
                     ${game.price?.toFixed(2)}
                 </div>
                 <div className="flex space-x-4">
-                    <button onClick={handleAddToLibrary} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
-                        Add to Library
+                    <button onClick={handlePurchase} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+                        Buy
                     </button>
                     <button onClick={() => navigate(`/edit-game/${id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">
                         Edit Game
