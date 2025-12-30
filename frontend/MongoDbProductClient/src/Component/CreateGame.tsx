@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../API/api';
 
@@ -11,8 +11,27 @@ export const CreateGame = () => {
         genre: '',
         developer: '',
         releaseDate: '',
-        tags: ''
+        coverImageUrl: ''
     });
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    const handleTagChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const options = e.target.options;
+        const value: string[] = [];
+        for (let i = 0, l = options.length; i < l; i++) {
+            if (options[i].selected) {
+                value.push(options[i].value);
+            }
+        }
+        setSelectedTags(value);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,9 +40,13 @@ export const CreateGame = () => {
                 ...formData,
                 price: Number(formData.price),
                 releaseDate: new Date(formData.releaseDate),
-                tags: formData.tags.split(',').map(tag => tag.trim())
+                tags: selectedTags
             };
-            await API.post('/Game', gameData);
+            await API.post('/Game', gameData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             navigate('/');
         } catch (error) {
             console.error('Error creating game:', error);
@@ -64,10 +87,23 @@ export const CreateGame = () => {
                     <label className="block text-gray-700 mb-2">Release Date</label>
                     <input type="date" value={formData.releaseDate} onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })} className="w-full px-3 py-2 border rounded-md" required />
                 </div>
+                {/* Cover Image URL */}
+                <div>
+                    <label className="block text-gray-700 mb-2">Cover Image URL</label>
+                    <input type="text" value={formData.coverImageUrl} onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })} className="w-full px-3 py-2 border rounded-md" />
+                </div>
                 {/* Tags */}
                 <div>
-                    <label className="block text-gray-700 mb-2">Tags (comma-separated)</label>
-                    <input type="text" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} className="w-full px-3 py-2 border rounded-md" />
+                    <label className="block text-gray-700 mb-2">Tags</label>
+                    <select multiple value={selectedTags} onChange={handleTagChange} className="w-full px-3 py-2 border rounded-md">
+                        <option value="Action">Action</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="RPG">RPG</option>
+                        <option value="Strategy">Strategy</option>
+                        <option value="Simulation">Simulation</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Racing">Racing</option>
+                    </select>
                 </div>
                 {/* Buttons */}
                 <div className="flex space-x-4">

@@ -42,12 +42,15 @@ export const Recommendations = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Recommended For You</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recommendations.map((game) => (
-                    <div key={game.id} className="bg-white rounded-lg shadow-md p-4">
-                        <h3 className="text-lg font-semibold">{game.name}</h3>
-                        <p className="text-gray-600 text-sm">{game.genre}</p>
-                        <Link to={`/game/${game.id}`} className="text-blue-500 hover:underline mt-2 inline-block">
-                            View Details
-                        </Link>
+                    <div key={game.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                        <img src={game.coverImageUrl || 'https://via.placeholder.com/300'} alt={game.name} className="w-full h-48 object-cover" />
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold">{game.name}</h3>
+                            <p className="text-gray-600 text-sm">{game.genre}</p>
+                            <Link to={`/game/${game.id}`} className="text-blue-500 hover:underline mt-2 inline-block">
+                                View Details
+                            </Link>
+                        </div>
                     </div>
                 ))}
             </div>
