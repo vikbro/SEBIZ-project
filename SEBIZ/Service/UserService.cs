@@ -99,5 +99,35 @@ namespace SEBIZ.Service
                 await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
             }
         }
+
+        public async Task PurchaseGameAsync(string userId, string gameId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new Exception($"User with id {userId} not found");
+            }
+
+            var game = await _gamesCollection.Find(g => g.Id == gameId).FirstOrDefaultAsync();
+            if (game == null)
+            {
+                throw new Exception($"Game with id {gameId} not found");
+            }
+
+            if (user.OwnedGamesIds.Contains(gameId))
+            {
+                throw new Exception("User already owns this game.");
+            }
+
+            if (user.Balance < (decimal)game.Price)
+            {
+                throw new Exception("Insufficient funds.");
+            }
+
+            user.Balance -= (decimal)game.Price;
+            user.OwnedGamesIds.Add(gameId);
+
+            await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
+        }
     }
 }

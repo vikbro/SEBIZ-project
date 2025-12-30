@@ -40,17 +40,31 @@ namespace SEBIZ.Service
                 .GroupBy(g => g.Genre)
                 .OrderByDescending(grp => grp.Count())
                 .Select(grp => grp.Key)
-                .Take(3) // Take top 3 genres
+                .Take(3)
                 .ToList();
 
-            if (!favoriteGenres.Any())
+            var favoriteTags = ownedGames
+                .SelectMany(g => g.Tags ?? Enumerable.Empty<string>())
+                .GroupBy(t => t)
+                .OrderByDescending(grp => grp.Count())
+                .Select(grp => grp.Key)
+                .Take(5)
+                .ToList();
+
+            if (!favoriteGenres.Any() && !favoriteTags.Any())
             {
                 return Enumerable.Empty<GameDto>();
             }
 
-            var recommendedGames = await _gamesCollection.Find(
-                g => favoriteGenres.Contains(g.Genre) && !user.OwnedGamesIds.Contains(g.Id)
-            ).Limit(10).ToListAsync();
+            var filter = Builders<Game>.Filter.And(
+                Builders<Game>.Filter.Not(Builders<Game>.Filter.In(g => g.Id, user.OwnedGamesIds)),
+                Builders<Game>.Filter.Or(
+                    Builders<Game>.Filter.In(g => g.Genre, favoriteGenres),
+                    Builders<Game>.Filter.AnyIn(g => g.Tags, favoriteTags)
+                )
+            );
+
+            var recommendedGames = await _gamesCollection.Find(filter).Limit(10).ToListAsync();
 
             return recommendedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags));
         }

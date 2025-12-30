@@ -23,7 +23,11 @@ export const GameList = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this game?')) {
             try {
-                await API.delete(`/Game/${id}`);
+                await API.delete(`/Game/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 fetchGames();
             } catch (error) {
                 console.error('Error deleting game:', error);

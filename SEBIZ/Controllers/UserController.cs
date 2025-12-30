@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
@@ -68,6 +69,25 @@ namespace SEBIZ.Controllers
             {
                 _logger.LogError(ex, "Error adding game {GameId} to user {UserId}", gameId, userId);
                 return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{userId}/purchase/{gameId}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PurchaseGame(string userId, string gameId)
+        {
+            try
+            {
+                await _userService.PurchaseGameAsync(userId, gameId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error purchasing game {GameId} for user {UserId}", gameId, userId);
+                return BadRequest(ex.Message);
             }
         }
     }
