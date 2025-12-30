@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Domain.Models;
@@ -7,7 +7,7 @@ namespace SEBIZ.Data
 {
     public class AppDbContext
     {
-        public IMongoCollection<Product> ProductCollection { get; }
+        public IMongoCollection<Game> GameCollection { get; }
 
         public AppDbContext(IOptions<MongoDBSettings> mongoDbSettings)
         {
@@ -20,14 +20,8 @@ namespace SEBIZ.Data
                 mongoDbSettings.Value.DatabaseName);
 
             //Connecting to specific collection
-            ProductCollection = database.GetCollection<Product>(
-                mongoDbSettings.Value.CollectionName);
-
-            var mongoDatabase = mongoClient.GetDatabase(
-                mongoDbSettings.Value.DatabaseName);
-
-            ProductCollection = mongoDatabase.GetCollection<Product>(
-                mongoDbSettings.Value.CollectionName);
+            GameCollection = database.GetCollection<Game>(
+                mongoDbSettings.Value.GamesCollectionName);
         }
     }
 }
