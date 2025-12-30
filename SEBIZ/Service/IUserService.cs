@@ -6,7 +6,7 @@ namespace SEBIZ.Service
     public interface IUserService
     {
         Task<UserDto> RegisterAsync(RegisterUserDto dto);
-        Task<UserDto> LoginAsync(LoginUserDto dto);
+        Task<LoginResponseDto> LoginAsync(LoginUserDto dto);
         Task AddGameToUserLibraryAsync(string userId, string gameId);
     }
 }

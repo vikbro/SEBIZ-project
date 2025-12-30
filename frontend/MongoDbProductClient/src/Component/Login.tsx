@@ -12,7 +12,8 @@ export const Login = () => {
         e.preventDefault();
         try {
             const response = await API.post('/User/login', { username, password });
-            localStorage.setItem('user', JSON.stringify(response.data));
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', response.data.token);
             navigate('/');
         } catch (err) {
             setError('Login failed. Please check your credentials.');

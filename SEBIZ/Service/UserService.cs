@@ -1,7 +1,13 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Domain.Models;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SEBIZ.Service
@@ -10,9 +16,11 @@ namespace SEBIZ.Service
     {
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Game> _gamesCollection;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IOptions<MongoDBSettings> mongoDBSettings)
+        public UserService(IOptions<MongoDBSettings> mongoDBSettings, IConfiguration configuration)
         {
+            _configuration = configuration;
             var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _usersCollection = mongoDatabase.GetCollection<User>(mongoDBSettings.Value.UsersCollectionName);
@@ -34,10 +42,10 @@ namespace SEBIZ.Service
             };
 
             await _usersCollection.InsertOneAsync(user);
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds);
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance);
         }
 
-        public async Task<UserDto> LoginAsync(LoginUserDto dto)
+        public async Task<LoginResponseDto> LoginAsync(LoginUserDto dto)
         {
             var user = await _usersCollection.Find(u => u.Username == dto.Username).FirstOrDefaultAsync();
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -45,7 +53,30 @@ namespace SEBIZ.Service
                 throw new MongoException("Invalid username or password.");
             }
 
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds);
+            var token = GenerateJwtToken(user);
+            var userDto = new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance);
+            return new LoginResponseDto(userDto, token);
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public async Task AddGameToUserLibraryAsync(string userId, string gameId)

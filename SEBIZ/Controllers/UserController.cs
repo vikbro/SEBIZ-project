@@ -39,12 +39,12 @@ namespace SEBIZ.Controllers
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserDto>> Login([FromBody] LoginUserDto dto)
+        public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginUserDto dto)
         {
             try
             {
-                var user = await _userService.LoginAsync(dto);
-                return Ok(user);
+                var response = await _userService.LoginAsync(dto);
+                return Ok(response);
             }
             catch (MongoException ex)
             {
