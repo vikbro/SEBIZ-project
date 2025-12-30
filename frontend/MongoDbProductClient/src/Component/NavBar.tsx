@@ -1,28 +1,43 @@
-
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  return (
-    <nav className="bg-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-gray-800">
-              Product Store
-            </Link>
-          </div>
-          <div className="flex items-center">
-            <Link
-              to="/create-product"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-            >
-              Add New Product
-            </Link>
-          </div>
-        </div>
-      </div>
-    </nav>
-  )
-}
+    const navigate = useNavigate();
+    const user = localStorage.getItem('user');
 
-export default Navbar
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        navigate('/');
+        // Consider a page reload or state update to refresh the navbar
+        window.location.reload();
+    };
+
+    return (
+        <nav className="bg-blue-600 text-white p-4 shadow-md">
+            <div className="container mx-auto flex justify-between items-center">
+                <Link to="/" className="text-2xl font-bold hover:text-blue-200">
+                    GameStore
+                </Link>
+                <div className="flex items-center space-x-4">
+                    <Link to="/" className="hover:text-blue-200">Home</Link>
+                    <Link to="/create-game" className="hover:text-blue-200">Add Game</Link>
+
+                    {user ? (
+                        <>
+                            <Link to="/my-library" className="hover:text-blue-200">My Library</Link>
+                            <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded">
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="hover:text-blue-200">Login</Link>
+                            <Link to="/register" className="hover:text-blue-200">Register</Link>
+                        </>
+                    )}
+                </div>
+            </div>
+        </nav>
+    );
+};
+
+export default Navbar;
