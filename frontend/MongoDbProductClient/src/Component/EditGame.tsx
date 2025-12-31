@@ -54,7 +54,7 @@ export const EditGame = () => {
                 tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
             };
             await API.put(`/Game/${id}`, gameData);
-            navigate(`/game/${id}`);
+            navigate(`/`);
         } catch (error) {
             console.error('Error updating game:', error);
         }
