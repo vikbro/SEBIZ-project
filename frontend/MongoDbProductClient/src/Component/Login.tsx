@@ -47,6 +47,7 @@ export const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-3 py-2 border rounded"
                         required
+                        autoComplete="current-password"
                     />
                 </div>
                 <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
