@@ -36,6 +36,7 @@ export const Login = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-3 py-2 border rounded"
                         required
+                        autoComplete="username"
                     />
                 </div>
                 <div className="mb-6">

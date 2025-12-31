@@ -33,6 +33,7 @@ export const Register = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-3 py-2 border rounded"
                         required
+                        autoComplete="username"
                     />
                 </div>
                 <div className="mb-6">
@@ -44,6 +45,7 @@ export const Register = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-3 py-2 border rounded"
                         required
+                        autoComplete="new-password"
                     />
                 </div>
                 <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
