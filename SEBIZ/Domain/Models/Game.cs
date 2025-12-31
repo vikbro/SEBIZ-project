@@ -30,5 +30,9 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("Tags")]
         public List<string>? Tags { get; set; }
+
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        [BsonElement("CreatedById")]
+        public string? CreatedById { get; set; }
     }
 }

@@ -1,9 +1,11 @@
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Service;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SEBIZ.Controllers
@@ -33,7 +35,12 @@ namespace SEBIZ.Controllers
         {
             try
             {
-                var game = await _gameService.CreateGameAsync(dto);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+                var game = await _gameService.CreateGameAsync(dto, userId);
                 return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game);
             }
             catch (MongoException ex)
@@ -88,8 +95,17 @@ namespace SEBIZ.Controllers
         {
             try
             {
-                var game = await _gameService.UpdateGameAsync(id, dto);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+                var game = await _gameService.UpdateGameAsync(id, dto, userId);
                 return Ok(game);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (MongoException ex)
             {
@@ -108,8 +124,17 @@ namespace SEBIZ.Controllers
         {
             try
             {
-                await _gameService.DeleteGameAsync(id);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+                await _gameService.DeleteGameAsync(id, userId);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (MongoException ex)
             {
