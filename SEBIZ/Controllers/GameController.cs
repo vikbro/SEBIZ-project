@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace SEBIZ.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class GameController : ControllerBase
@@ -27,6 +26,7 @@ namespace SEBIZ.Controllers
         }
 
 
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -50,6 +50,7 @@ namespace SEBIZ.Controllers
         }
 
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,6 +70,7 @@ namespace SEBIZ.Controllers
         }
 
 
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<GameDto>>> GetAllGames()
@@ -85,6 +87,7 @@ namespace SEBIZ.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -114,6 +117,7 @@ namespace SEBIZ.Controllers
         }
 
 
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
