@@ -19,7 +19,7 @@ namespace SEBIZ.Service
             _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.GamesCollectionName);
         }
 
-        public async Task<GameDto> CreateGameAsync(CreateGameDto dto)
+        public async Task<GameDto> CreateGameAsync(CreateGameDto dto, string userId)
         {
             var game = new Game
             {
@@ -29,15 +29,27 @@ namespace SEBIZ.Service
                 Genre = dto.Genre,
                 Developer = dto.Developer,
                 ReleaseDate = dto.ReleaseDate,
-                Tags = dto.Tags
+                Tags = dto.Tags,
+                CreatedById = userId
             };
 
             await _gamesCollection.InsertOneAsync(game);
             return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
         }
 
-        public async Task DeleteGameAsync(string id)
+        public async Task DeleteGameAsync(string id, string userId)
         {
+            var game = await _gamesCollection.Find(g => g.Id == id).FirstOrDefaultAsync();
+            if (game == null)
+            {
+                throw new MongoException($"Game with id {id} not found");
+            }
+
+            if (game.CreatedById != userId)
+            {
+                throw new System.UnauthorizedAccessException("User is not authorized to delete this game");
+            }
+
             var result = await _gamesCollection.DeleteOneAsync(g => g.Id == id);
             if (result.DeletedCount == 0)
             {
@@ -61,12 +73,17 @@ namespace SEBIZ.Service
             return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
         }
 
-        public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto)
+        public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto, string userId)
         {
             var game = await _gamesCollection.Find(g => g.Id == id).FirstOrDefaultAsync();
             if (game == null)
             {
                 throw new MongoException($"Game with id {id} not found");
+            }
+
+            if (game.CreatedById != userId)
+            {
+                throw new System.UnauthorizedAccessException("User is not authorized to update this game");
             }
 
             game.Name = dto.Name;
