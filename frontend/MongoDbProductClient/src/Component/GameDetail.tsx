@@ -44,10 +44,18 @@ export const GameDetail = () => {
         if (!id) return;
 
         try {
+            const userResponse = await API.get('/User/me');
+            const user = userResponse.data;
+
+            if (user.balance < game.price) {
+                setMessage('Insufficient balance to purchase this game.');
+                return;
+            }
+
             await API.post(`/User/purchase/${id}`);
             setMessage('Game purchased successfully!');
         } catch (error) {
-            setMessage('Failed to purchase game. You may already own it.');
+            setMessage('Failed to purchase game. You may already own it or have insufficient balance.');
             console.error('Error purchasing game:', error);
         }
     };
@@ -74,6 +82,7 @@ export const GameDetail = () => {
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="bg-white rounded-lg shadow-lg p-6">
+                <img src={game.imagePath} alt={game.name} className="w-full h-96 object-cover rounded-lg mb-6" />
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{game.name}</h1>
                 <p className="text-lg text-gray-500 mb-4">by {game.developer}</p>
                 <p className="text-gray-600 mb-4">{game.description}</p>

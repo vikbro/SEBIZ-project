@@ -8,4 +8,13 @@ export interface Game {
    developer: string;
    releaseDate: Date;
    tags: string[];
+   createdById: string;
+   imagePath?: string;
+}
+
+export interface User {
+    id: string;
+    username: string;
+    ownedGamesIds: string[];
+    balance: number;
 }
