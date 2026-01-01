@@ -1,7 +1,13 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Domain.Models;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SEBIZ.Service
@@ -10,13 +16,15 @@ namespace SEBIZ.Service
     {
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Game> _gamesCollection;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IOptions<MongoDBSettings> mongoDBSettings)
+        public UserService(IOptions<MongoDBSettings> mongoDBSettings, IConfiguration configuration)
         {
             var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _usersCollection = mongoDatabase.GetCollection<User>(mongoDBSettings.Value.UsersCollectionName);
             _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.GamesCollectionName);
+            _configuration = configuration;
         }
 
         public async Task<UserDto> RegisterAsync(RegisterUserDto dto)
@@ -34,7 +42,7 @@ namespace SEBIZ.Service
             };
 
             await _usersCollection.InsertOneAsync(user);
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds);
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, string.Empty);
         }
 
         public async Task<UserDto> LoginAsync(LoginUserDto dto)
@@ -45,10 +53,23 @@ namespace SEBIZ.Service
                 throw new MongoException("Invalid username or password.");
             }
 
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, tokenString);
         }
 
-        public async Task AddGameToUserLibraryAsync(string userId, string gameId)
+        public async Task PurchaseGameAsync(string userId, string gameId)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null)
