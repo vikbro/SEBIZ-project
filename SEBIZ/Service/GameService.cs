@@ -30,11 +30,12 @@ namespace SEBIZ.Service
                 Developer = dto.Developer,
                 ReleaseDate = dto.ReleaseDate,
                 Tags = dto.Tags,
-                CreatedById = userId
+                CreatedById = userId,
+                ImagePath = dto.ImagePath
             };
 
             await _gamesCollection.InsertOneAsync(game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
         }
 
         public async Task DeleteGameAsync(string id, string userId)
@@ -60,7 +61,7 @@ namespace SEBIZ.Service
         public async Task<IEnumerable<GameDto>> GetAllGamesAsync()
         {
             var games = await _gamesCollection.Find(_ => true).ToListAsync();
-            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags));
+            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById));
         }
 
         public async Task<GameDto> GetGameByIdAsync(string id)
@@ -70,7 +71,7 @@ namespace SEBIZ.Service
             {
                 throw new MongoException($"Game with id {id} not found");
             }
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
         }
 
         public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto, string userId)
@@ -93,9 +94,10 @@ namespace SEBIZ.Service
             game.Developer = dto.Developer;
             game.ReleaseDate = dto.ReleaseDate;
             game.Tags = dto.Tags;
+            game.ImagePath = dto.ImagePath;
 
             await _gamesCollection.ReplaceOneAsync(g => g.Id == id, game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
         }
     }
 }

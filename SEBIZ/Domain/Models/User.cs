@@ -18,5 +18,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("OwnedGamesIds")]
         public List<string> OwnedGamesIds { get; set; } = new List<string>();
+
+        [BsonElement("Balance")]
+        public double Balance { get; set; } = 0;
     }
 }

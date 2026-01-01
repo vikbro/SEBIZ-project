@@ -78,5 +78,53 @@ namespace SEBIZ.Controllers
                 return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
             }
         }
+
+        [Authorize]
+        [HttpPost("add-balance")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddBalance([FromBody] AddBalanceDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                await _userService.AddBalanceAsync(userId, dto.Amount);
+                return NoContent();
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error adding balance to user");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDto>> GetMe()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var user = await _userService.GetMeAsync(userId);
+                return Ok(user);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting user");
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import { EditGame } from "./Component/EditGame"
 import { Register } from "./Component/Register"
 import { Login } from "./Component/Login"
 import { MyLibrary } from "./Component/MyLibrary"
+import UserInfo from "./Component/UserInfo"
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/my-library" element={<MyLibrary />} />
+          <Route path="/user-info" element={<UserInfo />} />
         </Routes>
       </div>
     </Router>

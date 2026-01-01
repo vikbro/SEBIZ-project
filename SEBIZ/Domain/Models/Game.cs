@@ -33,5 +33,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("CreatedById")]
         public string CreatedById { get; set; } = string.Empty;
+
+        [BsonElement("ImagePath")]
+        public string? ImagePath { get; set; }
     }
 }
