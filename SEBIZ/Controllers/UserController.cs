@@ -126,5 +126,29 @@ namespace SEBIZ.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [Authorize]
+        [HttpGet("my-library")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetOwnedGames()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var games = await _userService.GetOwnedGamesAsync(userId);
+                return Ok(games);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting owned games");
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace SEBIZ.Service
         Task PurchaseGameAsync(string userId, string gameId);
         Task AddBalanceAsync(string userId, double amount);
         Task<UserDto> GetMeAsync(string userId);
+        Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId);
     }
 }

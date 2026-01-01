@@ -118,5 +118,17 @@ namespace SEBIZ.Service
 
             return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance, string.Empty);
         }
+
+        public async Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            var ownedGames = await _gamesCollection.Find(g => user.OwnedGamesIds.Contains(g.Id)).ToListAsync();
+            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById));
+        }
     }
 }

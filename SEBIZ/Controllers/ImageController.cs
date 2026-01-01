@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 namespace SEBIZ.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ImageController : ControllerBase
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
