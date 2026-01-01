@@ -7,6 +7,6 @@ namespace SEBIZ.Service
     {
         Task<UserDto> RegisterAsync(RegisterUserDto dto);
         Task<UserDto> LoginAsync(LoginUserDto dto);
-        Task PurchaseGameAsync(string userId, string gameId);
+        Task AddGameToUserLibraryAsync(string userId, string gameId);
     }
 }

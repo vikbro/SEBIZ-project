@@ -9,6 +9,7 @@ export const GameDetail = () => {
     const [game, setGame] = useState<Game | null>(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
+    const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
         const fetchGame = async () => {
@@ -25,21 +26,40 @@ export const GameDetail = () => {
         fetchGame();
     }, [id]);
 
-    const handleAddToLibrary = async () => {
+    useEffect(() => {
         const userString = localStorage.getItem('user');
-        if (!userString) {
-            setMessage('You need to be logged in to add games to your library.');
+        if (userString && game) {
+            const user = JSON.parse(userString);
+            if (user.id === game.createdById) {
+                setIsOwner(true);
+            }
+        }
+    }, [game]);
+
+    const handleAddToLibrary = async () => {
+        if (!localStorage.getItem('user')) {
+            setMessage('You need to be logged in to purchase games.');
             return;
         }
         if (!id) return;
 
-        const user = JSON.parse(userString);
         try {
-            await API.post(`/User/${user.id}/library/${id}`);
-            setMessage('Game added to your library successfully!');
+            await API.post(`/User/purchase/${id}`);
+            setMessage('Game purchased successfully!');
         } catch (error) {
-            setMessage('Failed to add game to library. You may already own it.');
-            console.error('Error adding game to library:', error);
+            setMessage('Failed to purchase game. You may already own it.');
+            console.error('Error purchasing game:', error);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!id) return;
+        try {
+            await API.delete(`/Game/${id}`);
+            navigate('/');
+        } catch (error) {
+            setMessage('Failed to delete game.');
+            console.error('Error deleting game:', error);
         }
     };
 
@@ -70,9 +90,16 @@ export const GameDetail = () => {
                     <button onClick={handleAddToLibrary} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
                         Add to Library
                     </button>
-                    <button onClick={() => navigate(`/edit-game/${id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">
-                        Edit Game
-                    </button>
+                    {isOwner && (
+                        <>
+                            <button onClick={() => navigate(`/edit-game/${id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">
+                                Edit Game
+                            </button>
+                            <button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+                                Delete Game
+                            </button>
+                        </>
+                    )}
                 </div>
                 {message && <p className="mt-4 text-green-600">{message}</p>}
             </div>

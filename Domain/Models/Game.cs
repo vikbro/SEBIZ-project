@@ -30,8 +30,5 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("Tags")]
         public List<string>? Tags { get; set; }
-
-        [BsonElement("CreatedById")]
-        public string CreatedById { get; set; } = string.Empty;
     }
 }

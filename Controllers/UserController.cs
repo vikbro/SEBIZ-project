@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Service;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SEBIZ.Controllers
@@ -55,26 +53,20 @@ namespace SEBIZ.Controllers
             }
         }
 
-        [Authorize]
-        [HttpPost("purchase/{gameId}")]
+        [HttpPost("{userId}/library/{gameId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PurchaseGame(string gameId)
+        public async Task<IActionResult> AddGameToLibrary(string userId, string gameId)
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized();
-                }
-                await _userService.PurchaseGameAsync(userId, gameId);
+                await _userService.AddGameToUserLibraryAsync(userId, gameId);
                 return NoContent();
             }
             catch (MongoException ex)
             {
-                _logger.LogError(ex, "Error adding game {GameId} to user", gameId);
+                _logger.LogError(ex, "Error adding game {GameId} to user {UserId}", gameId, userId);
                 return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
             }
         }

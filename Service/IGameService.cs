@@ -1,4 +1,4 @@
-using SEBIZ.Domain.Contracts;
+using SEBIZ.Domain.Contracts.MogoDbProductAPI.Domain.Contracts;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,10 +6,10 @@ namespace SEBIZ.Service
 {
     public interface IGameService
     {
-        Task<GameDto> CreateGameAsync(CreateGameDto dto, string userId);
+        Task<GameDto> CreateGameAsync(CreateGameDto dto);
         Task<GameDto> GetGameByIdAsync(string id);
         Task<IEnumerable<GameDto>> GetAllGamesAsync();
-        Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto, string userId);
-        Task DeleteGameAsync(string id, string userId);
+        Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto);
+        Task DeleteGameAsync(string id);
     }
 }

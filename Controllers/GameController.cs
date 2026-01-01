@@ -1,11 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using SEBIZ.Domain.Contracts;
+using SEBIZ.Domain.Contracts.MogoDbProductAPI.Domain.Contracts;
 using SEBIZ.Service;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SEBIZ.Controllers
 {
@@ -26,7 +22,6 @@ namespace SEBIZ.Controllers
         }
 
 
-        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,12 +29,7 @@ namespace SEBIZ.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized();
-                }
-                var game = await _gameService.CreateGameAsync(dto, userId);
+                var game = await _gameService.CreateGameAsync(dto);
                 return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game);
             }
             catch (MongoException ex)
@@ -50,7 +40,6 @@ namespace SEBIZ.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,7 +59,6 @@ namespace SEBIZ.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<GameDto>>> GetAllGames()
@@ -87,27 +75,16 @@ namespace SEBIZ.Controllers
             }
         }
 
-        [Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<GameDto>> UpdateGame([FromRoute] string id, [FromBody] UpdateGameDto dto)
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized();
-                }
-                var game = await _gameService.UpdateGameAsync(id, dto, userId);
+                var game = await _gameService.UpdateGameAsync(id, dto);
                 return Ok(game);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
             }
             catch (MongoException ex)
             {
@@ -117,27 +94,16 @@ namespace SEBIZ.Controllers
         }
 
 
-        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteGame([FromRoute] string id)
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized();
-                }
-                await _gameService.DeleteGameAsync(id, userId);
+                await _gameService.DeleteGameAsync(id);
                 return NoContent();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
             }
             catch (MongoException ex)
             {
