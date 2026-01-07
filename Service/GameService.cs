@@ -30,26 +30,35 @@ namespace SEBIZ.Service
                 Genre = dto.Genre,
                 Developer = dto.Developer,
                 ReleaseDate = dto.ReleaseDate,
-                Tags = dto.Tags
+                Tags = dto.Tags,
+                ImagePath = string.IsNullOrEmpty(dto.ImagePath) ? "Images/placeholder.png" : dto.ImagePath
             };
 
             await _gamesCollection.InsertOneAsync(game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath);
         }
 
         public async Task DeleteGameAsync(string id)
         {
-            var result = await _gamesCollection.DeleteOneAsync(g => g.Id == id);
-            if (result.DeletedCount == 0)
+            var game = await _gamesCollection.FindOneAndDeleteAsync(g => g.Id == id);
+            if (game == null)
             {
                 throw new MongoException($"Game with id {id} not found");
+            }
+
+            if (!string.IsNullOrEmpty(game.ImagePath) && game.ImagePath != "Images/placeholder.png")
+            {
+                if (System.IO.File.Exists(game.ImagePath))
+                {
+                    System.IO.File.Delete(game.ImagePath);
+                }
             }
         }
 
         public async Task<IEnumerable<GameDto>> GetAllGamesAsync()
         {
             var games = await _gamesCollection.Find(_ => true).ToListAsync();
-            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags));
+            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath));
         }
 
         public async Task<GameDto> GetGameByIdAsync(string id)
@@ -59,27 +68,45 @@ namespace SEBIZ.Service
             {
                 throw new MongoException($"Game with id {id} not found");
             }
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath);
         }
 
         public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto)
         {
-            var game = await _gamesCollection.Find(g => g.Id == id).FirstOrDefaultAsync();
-            if (game == null)
+            var updatedGame = new Game
+            {
+                Id = id,
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                Genre = dto.Genre,
+                Developer = dto.Developer,
+                ReleaseDate = dto.ReleaseDate,
+                Tags = dto.Tags,
+                ImagePath = string.IsNullOrEmpty(dto.ImagePath) ? "Images/placeholder.png" : dto.ImagePath
+            };
+
+            var oldGame = await _gamesCollection.FindOneAndReplaceAsync(
+                Builders<Game>.Filter.Eq(g => g.Id, id),
+                updatedGame,
+                new FindOneAndReplaceOptions<Game> { ReturnDocument = ReturnDocument.Before }
+            );
+
+            if (oldGame == null)
             {
                 throw new MongoException($"Game with id {id} not found");
             }
 
-            game.Name = dto.Name;
-            game.Description = dto.Description;
-            game.Price = dto.Price;
-            game.Genre = dto.Genre;
-            game.Developer = dto.Developer;
-            game.ReleaseDate = dto.ReleaseDate;
-            game.Tags = dto.Tags;
+            // Delete old image if it's different from the new one and not the placeholder
+            if (oldGame.ImagePath != updatedGame.ImagePath && oldGame.ImagePath != "Images/placeholder.png")
+            {
+                if (System.IO.File.Exists(oldGame.ImagePath))
+                {
+                    System.IO.File.Delete(oldGame.ImagePath);
+                }
+            }
 
-            await _gamesCollection.ReplaceOneAsync(g => g.Id == id, game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags);
+            return new GameDto(updatedGame.Id, updatedGame.Name, updatedGame.Description, updatedGame.Price, updatedGame.Genre, updatedGame.Developer, updatedGame.ReleaseDate, updatedGame.Tags, updatedGame.ImagePath);
         }
     }
 }
