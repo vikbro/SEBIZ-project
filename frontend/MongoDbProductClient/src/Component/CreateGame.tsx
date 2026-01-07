@@ -44,8 +44,9 @@ export const CreateGame = () => {
                 tags: formData.tags.split(',').map(tag => tag.trim()),
                 imagePath: imagePath
             };
-            await API.post('/Game', gameData);
-            navigate('/');
+            const response = await API.post('/Game', gameData);
+            const newGame = response.data;
+            navigate(`/game/${newGame.id}`);
         } catch (error) {
             console.error('Error creating game:', error);
         }

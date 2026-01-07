@@ -30,5 +30,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("Tags")]
         public List<string>? Tags { get; set; }
+
+        [BsonElement("ImagePath")]
+        public string? ImagePath { get; set; }
     }
 }
