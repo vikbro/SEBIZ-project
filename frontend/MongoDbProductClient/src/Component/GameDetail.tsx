@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Game } from '../Interface/baseInterface';
+import type { Game, User } from '../Interface/baseInterface';
 import API from '../API/api';
 
 export const GameDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [game, setGame] = useState<Game | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const { data } = await API.get('/User/me');
+                setUser(data);
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        };
+
         const fetchGame = async () => {
             if (!id) return;
             try {
@@ -23,31 +33,40 @@ export const GameDetail = () => {
                 setLoading(false);
             }
         };
+
+        fetchUser();
         fetchGame();
     }, [id]);
 
     useEffect(() => {
-        const userString = localStorage.getItem('user');
-        if (userString && game) {
-            const user = JSON.parse(userString);
+        if (user && game) {
             if (user.id === game.createdById) {
                 setIsOwner(true);
             }
         }
-    }, [game]);
+    }, [user, game]);
 
     const handleAddToLibrary = async () => {
-        if (!localStorage.getItem('user')) {
+        if (!user) {
             setMessage('You need to be logged in to purchase games.');
             return;
         }
         if (!id) return;
 
         try {
+            if (user.balance < game.price) {
+                setMessage('Insufficient balance to purchase this game.');
+                return;
+            }
+
             await API.post(`/User/purchase/${id}`);
             setMessage('Game purchased successfully!');
+
+            // Refetch user data to update balance
+            const { data } = await API.get('/User/me');
+            setUser(data);
         } catch (error) {
-            setMessage('Failed to purchase game. You may already own it.');
+            setMessage('Failed to purchase game. You may already own it or have insufficient balance.');
             console.error('Error purchasing game:', error);
         }
     };
@@ -74,6 +93,7 @@ export const GameDetail = () => {
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="bg-white rounded-lg shadow-lg p-6">
+                <img src={game.imagePath} alt={game.name} className="w-full h-96 object-cover rounded-lg mb-6" />
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{game.name}</h1>
                 <p className="text-lg text-gray-500 mb-4">by {game.developer}</p>
                 <p className="text-gray-600 mb-4">{game.description}</p>

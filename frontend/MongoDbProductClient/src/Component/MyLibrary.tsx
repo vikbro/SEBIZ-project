@@ -11,26 +11,8 @@ export const MyLibrary = () => {
     useEffect(() => {
         const fetchLibrary = async () => {
             try {
-                const userString = localStorage.getItem('user');
-                if (!userString) {
-                    setError('You must be logged in to view your library.');
-                    setLoading(false);
-                    return;
-                }
-
-                const user = JSON.parse(userString);
-                const gameIds = user.ownedGamesIds || [];
-
-                if (gameIds.length === 0) {
-                    setLoading(false);
-                    return;
-                }
-
-                const gamePromises = gameIds.map((id: string) => API.get<Game>(`/Game/${id}`));
-                const gameResponses = await Promise.all(gamePromises);
-                const gamesData = gameResponses.map(response => response.data);
-
-                setGames(gamesData);
+                const { data } = await API.get<Game[]>('/User/my-library');
+                setGames(data);
             } catch (err) {
                 setError('Failed to load your library.');
                 console.error(err);

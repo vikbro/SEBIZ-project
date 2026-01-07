@@ -42,7 +42,7 @@ namespace SEBIZ.Service
             };
 
             await _usersCollection.InsertOneAsync(user);
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, string.Empty);
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance, string.Empty);
         }
 
         public async Task<UserDto> LoginAsync(LoginUserDto dto)
@@ -66,7 +66,7 @@ namespace SEBIZ.Service
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, tokenString);
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance, tokenString);
         }
 
         public async Task PurchaseGameAsync(string userId, string gameId)
@@ -83,11 +83,52 @@ namespace SEBIZ.Service
                 throw new MongoException($"Game with id {gameId} not found");
             }
 
+            if (user.Balance < game.Price)
+            {
+                throw new MongoException("Insufficient balance.");
+            }
+
             if (user.OwnedGamesIds != null && !user.OwnedGamesIds.Contains(gameId))
             {
+                user.Balance -= game.Price ?? 0;
                 user.OwnedGamesIds.Add(gameId);
                 await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
             }
+        }
+
+        public async Task AddBalanceAsync(string userId, double amount)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            user.Balance += amount;
+            await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
+        }
+
+        public async Task<UserDto> GetMeAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance, string.Empty);
+        }
+
+        public async Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            var ownedGames = await _gamesCollection.Find(g => user.OwnedGamesIds.Contains(g.Id)).ToListAsync();
+            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById));
         }
     }
 }

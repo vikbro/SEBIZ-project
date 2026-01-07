@@ -8,6 +8,15 @@ export const GameList = () => {
     const navigate = useNavigate();
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState('');
+
+    useEffect(() => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            setUserId(user.id);
+        }
+    }, []);
 
     const fetchGames = async () => {
         try {
@@ -52,6 +61,7 @@ export const GameList = () => {
                         key={game.id}
                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                     >
+                        <img src={game.imagePath} alt={game.name} className="w-full h-48 object-cover" />
                         <div className="p-6">
                             <h2 className="text-xl font-semibold text-gray-800 mb-2">
                                 {game.name || 'Unnamed Game'}
@@ -71,12 +81,22 @@ export const GameList = () => {
                                 >
                                     View Details
                                 </button>
-                                <button
-                                    onClick={() => handleDelete(game.id)}
-                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-                                >
-                                    Delete
-                                </button>
+                                {userId === game.createdById && (
+                                    <>
+                                        <button
+                                            onClick={() => navigate(`/edit-game/${game.id}`)}
+                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(game.id)}
+                                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                                        >
+                                            Delete
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

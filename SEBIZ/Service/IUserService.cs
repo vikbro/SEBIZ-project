@@ -8,5 +8,8 @@ namespace SEBIZ.Service
         Task<UserDto> RegisterAsync(RegisterUserDto dto);
         Task<UserDto> LoginAsync(LoginUserDto dto);
         Task PurchaseGameAsync(string userId, string gameId);
+        Task AddBalanceAsync(string userId, double amount);
+        Task<UserDto> GetMeAsync(string userId);
+        Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId);
     }
 }
