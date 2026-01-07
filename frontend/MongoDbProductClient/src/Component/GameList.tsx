@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Game } from '../Interface/baseInterface';
 import API from '../API/api';
 import { Recommendations } from './Recommendations';
+import placeholder from '../assets/placeholder.png';
 
 export const GameList = () => {
     const navigate = useNavigate();
@@ -52,6 +53,11 @@ export const GameList = () => {
                         key={game.id}
                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                     >
+                        <img
+                            src={game.imageUrl ? `http://localhost:5202${game.imageUrl}` : placeholder}
+                            alt={game.name || 'Game image'}
+                            className="w-full h-48 object-cover"
+                        />
                         <div className="p-6">
                             <h2 className="text-xl font-semibold text-gray-800 mb-2">
                                 {game.name || 'Unnamed Game'}
