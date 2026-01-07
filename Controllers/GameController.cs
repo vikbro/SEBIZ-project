@@ -25,7 +25,7 @@ namespace SEBIZ.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GameDto>> CreateGame([FromBody] CreateGameDto dto)
+        public async Task<ActionResult<GameDto>> CreateGame([FromForm] CreateGameDto dto)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace SEBIZ.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<GameDto>> UpdateGame([FromRoute] string id, [FromBody] UpdateGameDto dto)
+        public async Task<ActionResult<GameDto>> UpdateGame([FromRoute] string id, [FromForm] UpdateGameDto dto)
         {
             try
             {

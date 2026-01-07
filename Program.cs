@@ -1,8 +1,10 @@
+using Microsoft.Extensions.FileProviders;
 using Scalar.AspNetCore;
 using SEBIZ.Data;
 using SEBIZ.Domain.Contracts;
 using SEBIZ.Extensions;
 using SEBIZ.Service;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.ConfigureCors(builder.Configuration);
@@ -31,6 +33,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Images")),
+    RequestPath = "/Images"
+});
 
 app.UseAuthorization();
 

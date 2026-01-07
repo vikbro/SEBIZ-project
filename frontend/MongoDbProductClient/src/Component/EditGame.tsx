@@ -6,6 +6,7 @@ import type { Game } from '../Interface/baseInterface';
 type FormData = Omit<Game, 'id' | 'releaseDate' | 'tags'> & {
     releaseDate: string;
     tags: string;
+    imageFile?: File | null;
 };
 
 export const EditGame = () => {
@@ -18,8 +19,11 @@ export const EditGame = () => {
         genre: '',
         developer: '',
         releaseDate: '',
-        tags: ''
+        tags: '',
+        imageUrl: '',
+        imageFile: null,
     });
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchGame = async () => {
@@ -29,8 +33,12 @@ export const EditGame = () => {
                 setFormData({
                     ...data,
                     releaseDate: new Date(data.releaseDate).toISOString().split('T')[0],
-                    tags: data.tags.join(', ')
+                    tags: data.tags.join(', '),
+                    imageFile: null,
                 });
+                if (data.imageUrl) {
+                    setPreviewUrl(data.imageUrl);
+                }
             } catch (error) {
                 console.error('Error fetching game:', error);
             }
@@ -43,17 +51,35 @@ export const EditGame = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setFormData(prev => ({ ...prev, imageFile: file }));
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!id) return;
         try {
-            const gameData = {
-                ...formData,
-                price: Number(formData.price),
-                releaseDate: new Date(formData.releaseDate),
-                tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-            };
-            await API.put(`/Game/${id}`, gameData);
+            const postData = new FormData();
+            postData.append('name', formData.name);
+            postData.append('description', formData.description);
+            postData.append('price', String(formData.price));
+            postData.append('genre', formData.genre);
+            postData.append('developer', formData.developer);
+            postData.append('releaseDate', formData.releaseDate);
+            postData.append('tags', formData.tags);
+            if (formData.imageFile) {
+                postData.append('imageFile', formData.imageFile);
+            }
+
+            await API.put(`/Game/${id}`, postData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             navigate(`/game/${id}`);
         } catch (error) {
             console.error('Error updating game:', error);
@@ -91,6 +117,11 @@ export const EditGame = () => {
                 <div>
                     <label>Tags (comma-separated)</label>
                     <input name="tags" type="text" value={formData.tags} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                    <label>Image</label>
+                    <input type="file" onChange={handleFileChange} className="w-full" />
+                    {previewUrl && <img src={previewUrl.startsWith('blob:') ? previewUrl : `http://localhost:5202${previewUrl}`} alt="Game preview" className="mt-4 w-full h-auto" />}
                 </div>
                 <div className="flex space-x-4">
                     <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Update Game</button>

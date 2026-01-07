@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Game } from '../Interface/baseInterface';
 import API from '../API/api';
+import placeholder from '../assets/placeholder.png';
 
 export const GameDetail = () => {
     const { id } = useParams();
@@ -74,6 +75,11 @@ export const GameDetail = () => {
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="bg-white rounded-lg shadow-lg p-6">
+                <img
+                    src={game.imageUrl ? `http://localhost:5202${game.imageUrl}` : placeholder}
+                    alt={game.name || 'Game image'}
+                    className="w-full h-96 object-cover rounded-lg mb-6"
+                />
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{game.name}</h1>
                 <p className="text-lg text-gray-500 mb-4">by {game.developer}</p>
                 <p className="text-gray-600 mb-4">{game.description}</p>
