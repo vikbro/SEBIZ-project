@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace SEBIZ.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ImageController : ControllerBase
     {
         private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>
