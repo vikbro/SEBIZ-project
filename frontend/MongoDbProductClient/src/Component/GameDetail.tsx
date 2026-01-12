@@ -90,18 +90,19 @@ export const GameDetail = () => {
         return <div className="text-center mt-10">Game not found.</div>;
     }
 
-    const getImageUrl = (imagePath) => {
-        if (!imagePath) {
-            return '';
-        }
-        const imageName = imagePath.split('/').pop();
-        return `${API.defaults.baseURL}/Image/${imageName}`;
-    };
-
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="bg-white rounded-lg shadow-lg p-6">
-                <img src={getImageUrl(game.imagePath)} alt={game.name} className="w-full h-96 object-cover rounded-lg mb-6" />
+                <img
+                    src={game.imagePath || '/uploads/placeholder.png'}
+                    alt={game.name}
+                    className="w-full h-96 object-cover rounded-lg mb-6"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '/uploads/placeholder.png';
+                    }}
+                />
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{game.name}</h1>
                 <p className="text-lg text-gray-500 mb-4">by {game.developer}</p>
                 <p className="text-gray-600 mb-4">{game.description}</p>
