@@ -36,5 +36,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("ImagePath")]
         public string? ImagePath { get; set; }
+
+        [BsonElement("FileName")]
+        public string? FileName { get; set; }
     }
 }
