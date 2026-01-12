@@ -128,7 +128,18 @@ namespace SEBIZ.Service
             }
 
             var ownedGames = await _gamesCollection.Find(g => user.OwnedGamesIds.Contains(g.Id)).ToListAsync();
-            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById));
+            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName));
+        }
+
+        public async Task<UserDto> GetUserByIdAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            return new UserDto(user.Id, user.Username, user.OwnedGamesIds, user.Balance, string.Empty);
         }
     }
 }
