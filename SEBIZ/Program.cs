@@ -43,6 +43,7 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddScoped<IGameUsageService, GameUsageService>();
+builder.Services.AddHostedService<TempFileCleanupService>();
 
 var app = builder.Build();
 app.UseCors("CorsPolicy");

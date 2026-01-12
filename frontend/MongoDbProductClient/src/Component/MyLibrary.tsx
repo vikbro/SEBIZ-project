@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import API from '../API/api';
 import type { Game } from '../Interface/baseInterface';
+import { Link } from 'react-router-dom';
 
 export const MyLibrary = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [playMessage, setPlayMessage] = useState('');
 
     useEffect(() => {
         const fetchLibrary = async () => {
@@ -24,30 +24,6 @@ export const MyLibrary = () => {
         fetchLibrary();
     }, []);
 
-    const handlePlayGame = async (gameId: string) => {
-        const userString = localStorage.getItem('user');
-        if (!userString) {
-            setPlayMessage('You must be logged in to play.');
-            return;
-        }
-        const user = JSON.parse(userString);
-
-        // Simulate playing for 1 minute
-        const minutesPlayed = 1;
-
-        try {
-            await API.post('/GameUsage/update', {
-                userId: user.id,
-                gameId,
-                minutesPlayed
-            });
-            setPlayMessage(`You "played" ${games.find(g => g.id === gameId)?.name} for ${minutesPlayed} minute.`);
-        } catch (error) {
-            setPlayMessage('Failed to record play time.');
-            console.error(error);
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -63,7 +39,6 @@ export const MyLibrary = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-8">My Library</h1>
-            {playMessage && <p className="mb-4 text-green-600">{playMessage}</p>}
             {games.length === 0 ? (
                 <p>You don't own any games yet.</p>
             ) : (
@@ -74,12 +49,9 @@ export const MyLibrary = () => {
                                 <h2 className="text-xl font-semibold">{game.name}</h2>
                                 <p className="text-gray-600">{game.description}</p>
                             </div>
-                            <button
-                                onClick={() => handlePlayGame(game.id)}
-                                className="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Play (Simulate 1 min)
-                            </button>
+                            <Link to={`/Play/${game.id}`} className="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-center">
+                                Play
+                            </Link>
                         </div>
                     ))}
                 </div>

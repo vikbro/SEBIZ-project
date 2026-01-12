@@ -11,5 +11,6 @@ namespace SEBIZ.Service
         Task AddBalanceAsync(string userId, double amount);
         Task<UserDto> GetMeAsync(string userId);
         Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId);
+        Task<UserDto> GetUserByIdAsync(string userId);
     }
 }
