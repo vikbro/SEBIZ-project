@@ -18,14 +18,14 @@ namespace SEBIZ.Service
             _gameUsageCollection = mongoDatabase.GetCollection<GameUsage>(mongoDBSettings.Value.GameUsageCollectionName);
         }
 
-        public async Task UpdatePlayTimeAsync(string userId, string gameId, int minutesPlayed)
+        public async Task UpdatePlayTimeAsync(string userId, string gameId, int secondsPlayed)
         {
             var filter = Builders<GameUsage>.Filter.Where(gu => gu.UserId == userId && gu.GameId == gameId);
             var existingUsage = await _gameUsageCollection.Find(filter).FirstOrDefaultAsync();
 
             if (existingUsage != null)
             {
-                existingUsage.PlayTimeMinutes += minutesPlayed;
+                existingUsage.PlayTimeSeconds += secondsPlayed;
                 existingUsage.LastPlayed = DateTime.UtcNow;
                 await _gameUsageCollection.ReplaceOneAsync(filter, existingUsage);
             }
@@ -35,11 +35,17 @@ namespace SEBIZ.Service
                 {
                     UserId = userId,
                     GameId = gameId,
-                    PlayTimeMinutes = minutesPlayed,
+                    PlayTimeSeconds = secondsPlayed,
                     LastPlayed = DateTime.UtcNow
                 };
                 await _gameUsageCollection.InsertOneAsync(newUsage);
             }
+        }
+
+        public async Task<IEnumerable<GameUsage>> GetGameUsagesByUserId(string userId)
+        {
+            var filter = Builders<GameUsage>.Filter.Eq(gu => gu.UserId, userId);
+            return await _gameUsageCollection.Find(filter).ToListAsync();
         }
     }
 }

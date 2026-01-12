@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import api from '../API/api';
-import type { User } from '../Interface/baseInterface';
+import type { User, GameUsage } from '../Interface/baseInterface';
 
 const UserInfo = () => {
     const [user, setUser] = useState<User | null>(null);
+    const [gameUsages, setGameUsages] = useState<GameUsage[]>([]);
     const [amount, setAmount] = useState(0);
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchUserAndGameUsage = async () => {
             try {
-                const response = await api.get('/User/me');
-                setUser(response.data);
+                const userResponse = await api.get('/User/me');
+                setUser(userResponse.data);
+
+                if (userResponse.data) {
+                    const usageResponse = await api.get(`/api/GameUsage/WithGameDetails/me`);
+                    setGameUsages(usageResponse.data);
+                }
+
             } catch (error) {
-                console.error('Error fetching user data:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchUser();
+        fetchUserAndGameUsage();
     }, []);
 
     const handleAddBalance = async () => {
@@ -52,6 +59,26 @@ const UserInfo = () => {
                 >
                     Add Balance
                 </button>
+            </div>
+
+            <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-bold mb-4">Game Playtime</h2>
+                <table className="min-w-full">
+                    <thead>
+                        <tr>
+                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Game Title</th>
+                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Playtime (minutes)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {gameUsages.map((usage, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.gameTitle}</td>
+                                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.playTimeMinutes}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             {showModal && (

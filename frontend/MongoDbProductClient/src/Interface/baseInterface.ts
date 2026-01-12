@@ -18,3 +18,10 @@ export interface User {
     ownedGamesIds: string[];
     balance: number;
 }
+
+export interface GameUsage {
+    gameId: string;
+    playTimeMinutes: number;
+    lastPlayed: Date;
+    gameTitle: string;
+}

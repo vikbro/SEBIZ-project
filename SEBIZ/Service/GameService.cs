@@ -31,11 +31,12 @@ namespace SEBIZ.Service
                 ReleaseDate = dto.ReleaseDate,
                 Tags = dto.Tags,
                 CreatedById = userId,
-                ImagePath = dto.ImagePath
+                ImagePath = dto.ImagePath,
+                FileName = dto.FileName
             };
 
             await _gamesCollection.InsertOneAsync(game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById, game.FileName);
         }
 
         public async Task DeleteGameAsync(string id, string userId)
@@ -61,7 +62,7 @@ namespace SEBIZ.Service
         public async Task<IEnumerable<GameDto>> GetAllGamesAsync()
         {
             var games = await _gamesCollection.Find(_ => true).ToListAsync();
-            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById));
+            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName));
         }
 
         public async Task<GameDto> GetGameByIdAsync(string id)
@@ -71,7 +72,14 @@ namespace SEBIZ.Service
             {
                 throw new MongoException($"Game with id {id} not found");
             }
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById, game.FileName);
+        }
+
+        public async Task<IEnumerable<GameDto>> GetGamesByIdsAsync(IEnumerable<string> ids)
+        {
+            var filter = Builders<Game>.Filter.In(g => g.Id, ids);
+            var games = await _gamesCollection.Find(filter).ToListAsync();
+            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName));
         }
 
         public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto, string userId)
@@ -95,9 +103,10 @@ namespace SEBIZ.Service
             game.ReleaseDate = dto.ReleaseDate;
             game.Tags = dto.Tags;
             game.ImagePath = dto.ImagePath;
+            game.FileName = dto.FileName;
 
             await _gamesCollection.ReplaceOneAsync(g => g.Id == id, game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById, game.FileName);
         }
     }
 }

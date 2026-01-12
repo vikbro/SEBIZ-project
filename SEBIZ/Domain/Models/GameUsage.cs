@@ -16,9 +16,9 @@ namespace SEBIZ.Domain.Models
         [BsonElement("GameId")]
         public string GameId { get; set; } = string.Empty;
 
-        // Play time in minutes
-        [BsonElement("PlayTimeMinutes")]
-        public long PlayTimeMinutes { get; set; }
+        // Play time in seconds
+        [BsonElement("PlayTimeSeconds")]
+        public long PlayTimeSeconds { get; set; }
 
         [BsonElement("LastPlayed")]
         public DateTime LastPlayed { get; set; }
