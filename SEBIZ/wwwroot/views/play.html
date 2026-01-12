@@ -42,7 +42,7 @@
         gameFrame.src = `/api/Play/Content/${gameId}`;
 
         // Function to send playtime update
-        function sendPlaytimeUpdate(useBeacon = false) {
+        function sendPlaytimeUpdate() {
             const token = localStorage.getItem('jwt_token');
             const now = Date.now();
             const elapsedSeconds = Math.round((now - lastUpdateTime) / 1000);
@@ -51,16 +51,12 @@
             const data = JSON.stringify({ gameId: gameId, secondsPlayed: elapsedSeconds });
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
-            if (useBeacon && navigator.sendBeacon) {
-                navigator.sendBeacon('/api/Play/playtime/update', new Blob([data], { type: 'application/json' }));
-            } else {
-                fetch('/api/Play/playtime/update', {
-                    method: 'POST',
-                    headers: headers,
-                    body: data,
-                    keepalive: true
-                }).catch(error => console.error('Error sending playtime update:', error));
-            }
+            fetch('/api/Play/playtime/update', {
+                method: 'POST',
+                headers: headers,
+                body: data,
+                keepalive: true
+            }).catch(error => console.error('Error sending playtime update:', error));
         }
 
         // Start sending playtime updates every minute
@@ -69,7 +65,7 @@
         // Handle closing the game
         function closeGame() {
             clearInterval(playTimeInterval);
-            sendPlaytimeUpdate(true);
+            sendPlaytimeUpdate();
             window.location.href = '/';
         }
 
@@ -77,7 +73,7 @@
 
         // Also handle the user navigating away from the page
         window.addEventListener('beforeunload', (event) => {
-            sendPlaytimeUpdate(true);
+            sendPlaytimeUpdate();
         });
     </script>
 </body>
