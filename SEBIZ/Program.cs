@@ -6,6 +6,7 @@ using SEBIZ.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.ConfigureCors(builder.Configuration);
+builder.Services.ConfigureAuthentication(builder.Configuration);
 
 // Add services to the container.
 
@@ -34,6 +35,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

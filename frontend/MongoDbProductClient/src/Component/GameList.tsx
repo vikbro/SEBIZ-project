@@ -23,11 +23,7 @@ export const GameList = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this game?')) {
             try {
-                await API.delete(`/Game/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                await API.delete(`/Game/${id}`);
                 fetchGames();
             } catch (error) {
                 console.error('Error deleting game:', error);
@@ -75,6 +71,12 @@ export const GameList = () => {
                                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
                                 >
                                     View Details
+                                </button>
+                                <button
+                                    onClick={() => navigate(`/edit-game/${game.id}`)}
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+                                >
+                                    Edit
                                 </button>
                                 <button
                                     onClick={() => handleDelete(game.id)}

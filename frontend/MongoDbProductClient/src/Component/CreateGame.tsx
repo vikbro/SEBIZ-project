@@ -42,11 +42,7 @@ export const CreateGame = () => {
                 releaseDate: new Date(formData.releaseDate),
                 tags: selectedTags
             };
-            await API.post('/Game', gameData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            await API.post('/Game', gameData);
             navigate('/');
         } catch (error) {
             console.error('Error creating game:', error);
