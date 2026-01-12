@@ -24,7 +24,20 @@ namespace SEBIZ.Controllers
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest("No file uploaded.");
+                return Ok(new { ImagePath = (string)null });
+            }
+
+            var maxFileSize = 5 * 1024 * 1024; // 5MB
+            if (file.Length > maxFileSize)
+            {
+                return BadRequest("File size exceeds the limit of 5MB.");
+            }
+
+            var allowedExtensions = new[] { ".png", ".jpg" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest("Invalid file format. Only .png and .jpg are allowed.");
             }
 
             var uploadsFolderPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
