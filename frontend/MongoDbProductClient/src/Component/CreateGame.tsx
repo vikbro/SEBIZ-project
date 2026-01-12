@@ -12,7 +12,6 @@ export const CreateGame = () => {
         developer: '',
         releaseDate: '',
         tags: '',
-        imagePath: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -25,11 +24,11 @@ export const CreateGame = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            let imagePath = '';
+            let imagePath: string | null = null;
             if (imageFile) {
-                const formData = new FormData();
-                formData.append('file', imageFile);
-                const response = await API.post('/Image/upload', formData, {
+                const imageData = new FormData();
+                imageData.append('file', imageFile);
+                const response = await API.post('/Image/upload', imageData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }

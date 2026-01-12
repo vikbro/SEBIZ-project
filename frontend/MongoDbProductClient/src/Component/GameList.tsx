@@ -61,7 +61,16 @@ export const GameList = () => {
                         key={game.id}
                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                     >
-                        <img src={game.imagePath} alt={game.name} className="w-full h-48 object-cover" />
+                        <img
+                            src={game.imagePath || '/uploads/placeholder.png'}
+                            alt={game.name}
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null;
+                                target.src = '/uploads/placeholder.png';
+                            }}
+                        />
                         <div className="p-6">
                             <h2 className="text-xl font-semibold text-gray-800 mb-2">
                                 {game.name || 'Unnamed Game'}
