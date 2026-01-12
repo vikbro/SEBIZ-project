@@ -6,75 +6,37 @@
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
             overflow: hidden;
+            height: 100%;
+            width: 100%;
         }
         iframe {
-            width: 100%;
+            border: none;
             height: 100%;
-            border: none;
-        }
-        #closeButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            cursor: pointer;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <iframe id="gameFrame" src=""></iframe>
-    <button id="closeButton">Close Game</button>
+    <iframe id="game-iframe"></iframe>
 
     <script>
-        const gameFrame = document.getElementById('gameFrame');
-        const closeButton = document.getElementById('closeButton');
-        const pathParts = window.location.pathname.split('/');
-        const gameId = pathParts[pathParts.length - 1];
-        let playTimeInterval;
-        let lastUpdateTime = Date.now();
+        const gameId = window.location.pathname.split('/').pop();
+        const iframe = document.getElementById('game-iframe');
+        iframe.src = `/api/Play/Content/${gameId}/`;
 
-        // Set the game source
-        gameFrame.src = `/api/Play/Content/${gameId}`;
+        let startTime = Date.now();
 
-        // Function to send playtime update
-        function sendPlaytimeUpdate() {
-            const token = localStorage.getItem('jwt_token');
-            const now = Date.now();
-            const elapsedSeconds = Math.round((now - lastUpdateTime) / 1000);
-            lastUpdateTime = now;
-
-            const data = JSON.stringify({ gameId: gameId, secondsPlayed: elapsedSeconds });
-            const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-
-            fetch('/api/Play/playtime/update', {
-                method: 'POST',
-                headers: headers,
-                body: data,
-                keepalive: true
-            }).catch(error => console.error('Error sending playtime update:', error));
+        function sendPlaytime() {
+            const secondsPlayed = Math.round((Date.now() - startTime) / 1000);
+            if (secondsPlayed > 0) {
+                const data = { gameId, secondsPlayed };
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                navigator.sendBeacon('/api/Play/playtime/update', blob);
+            }
         }
 
-        // Start sending playtime updates every minute
-        playTimeInterval = setInterval(() => sendPlaytimeUpdate(), 60000);
-
-        // Handle closing the game
-        function closeGame() {
-            clearInterval(playTimeInterval);
-            sendPlaytimeUpdate();
-            window.location.href = '/';
-        }
-
-        closeButton.addEventListener('click', closeGame);
-
-        // Also handle the user navigating away from the page
-        window.addEventListener('beforeunload', (event) => {
-            sendPlaytimeUpdate();
-        });
+        window.addEventListener('beforeunload', sendPlaytime);
     </script>
 </body>
 </html>

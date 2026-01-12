@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import API from '../API/api';
 import type { Game } from '../Interface/baseInterface';
-import { Link } from 'react-router-dom';
 
 export const MyLibrary = () => {
     const [games, setGames] = useState<Game[]>([]);
@@ -49,9 +48,9 @@ export const MyLibrary = () => {
                                 <h2 className="text-xl font-semibold">{game.name}</h2>
                                 <p className="text-gray-600">{game.description}</p>
                             </div>
-                            <Link to={`/api/Play/${game.id}`} className="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-center">
+                            <a href={`/api/Play/${game.id}`} className="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-center">
                                 Play
-                            </Link>
+                            </a>
                         </div>
                     ))}
                 </div>

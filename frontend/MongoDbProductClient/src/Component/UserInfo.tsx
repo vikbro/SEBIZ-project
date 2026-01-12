@@ -15,7 +15,7 @@ const UserInfo = () => {
                 setUser(userResponse.data);
 
                 if (userResponse.data) {
-                    const usageResponse = await api.get(`/api/GameUsage/WithGameDetails/me`);
+                    const usageResponse = await api.get(`/GameUsage/WithGameDetails/me`);
                     setGameUsages(usageResponse.data);
                 }
 

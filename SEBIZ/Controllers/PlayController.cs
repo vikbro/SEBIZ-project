@@ -98,26 +98,22 @@ namespace SEBIZ.Controllers
             return PhysicalFile(requestedFilePath, contentType);
         }
 
-        private string GetContentType(string path)
+        private static readonly Dictionary<string, string> _mimeTypeMappings = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
         {
-            var types = GetMimeTypes();
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-            return types.ContainsKey(ext) ? types[ext] : "application/octet-stream";
-        }
+            {".html", "text/html"},
+            {".js", "application/javascript"},
+            {".css", "text/css"},
+            {".png", "image/png"},
+            {".jpg", "image/jpeg"},
+            {".jpeg", "image/jpeg"},
+            {".gif", "image/gif"},
+            {".wasm", "application/wasm"},
+        };
 
-        private Dictionary<string, string> GetMimeTypes()
+        private static string GetContentType(string path)
         {
-            return new Dictionary<string, string>
-            {
-                {".html", "text/html"},
-                {".js", "application/javascript"},
-                {".css", "text/css"},
-                {".png", "image/png"},
-                {".jpg", "image/jpeg"},
-                {".jpeg", "image/jpeg"},
-                {".gif", "image/gif"},
-                {".wasm", "application/wasm"},
-            };
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return _mimeTypeMappings.TryGetValue(ext, out var contentType) ? contentType : "application/octet-stream";
         }
 
         [HttpPost("playtime/update")]
