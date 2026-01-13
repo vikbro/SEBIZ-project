@@ -6,18 +6,22 @@ const UserInfo = () => {
     const [user, setUser] = useState<User | null>(null);
     const [amount, setAmount] = useState(0);
     const [showModal, setShowModal] = useState(false);
+    const [playtime, setPlaytime] = useState(0);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get('/User/me');
-                setUser(response.data);
+                const userResponse = await api.get('/User/me');
+                setUser(userResponse.data);
+
+                const playtimeResponse = await api.get(`/User/${userResponse.data.id}/playtime`);
+                setPlaytime(playtimeResponse.data);
             } catch (error) {
-                console.error('Error fetching user data:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchUser();
+        fetchData();
     }, []);
 
     const handleAddBalance = async () => {
@@ -40,12 +44,19 @@ const UserInfo = () => {
         return <div>Loading...</div>;
     }
 
+    const formatPlaytime = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        return `${hours}h ${remainingMinutes}m`;
+    };
+
     return (
         <div className="container mx-auto mt-10">
             <div className="bg-white p-6 rounded-lg shadow-lg">
                 <h1 className="text-2xl font-bold mb-4">User Information</h1>
                 <p><strong>Username:</strong> {user.username}</p>
                 <p><strong>Balance:</strong> ${user.balance}</p>
+                <p><strong>Total Playtime:</strong> {formatPlaytime(playtime)}</p>
                 <button
                     onClick={() => setShowModal(true)}
                     className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

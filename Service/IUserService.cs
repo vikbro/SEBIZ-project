@@ -8,5 +8,6 @@ namespace SEBIZ.Service
         Task<UserDto> RegisterAsync(RegisterUserDto dto);
         Task<UserDto> LoginAsync(LoginUserDto dto);
         Task AddGameToUserLibraryAsync(string userId, string gameId);
+        Task<int> GetTotalPlayTime(string userId);
     }
 }

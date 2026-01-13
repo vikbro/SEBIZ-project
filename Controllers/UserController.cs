@@ -70,5 +70,22 @@ namespace SEBIZ.Controllers
                 return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{userId}/playtime")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<int>> GetTotalPlayTime(string userId)
+        {
+            try
+            {
+                var playtime = await _userService.GetTotalPlayTime(userId);
+                return Ok(playtime);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting playtime for user {UserId}", userId);
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

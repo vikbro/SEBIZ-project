@@ -14,12 +14,10 @@ namespace SEBIZ.Service
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Game> _gamesCollection;
 
-        public RecommendationService(IOptions<MongoDBSettings> mongoDBSettings)
+        public RecommendationService(AppDbContext context)
         {
-            var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
-            var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _usersCollection = mongoDatabase.GetCollection<User>("Users");
-            _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.CollectionName);
+            _usersCollection = context.Users;
+            _gamesCollection = context.GameCollection;
         }
 
         public async Task<IEnumerable<GameDto>> GetRecommendationsAsync(string userId)

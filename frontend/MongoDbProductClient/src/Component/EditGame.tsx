@@ -24,10 +24,17 @@ export const EditGame = () => {
         imagePath: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [gameFile, setGameFile] = useState<File | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setImageFile(e.target.files[0]);
+        }
+    };
+
+    const handleGameFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setGameFile(e.target.files[0]);
         }
     };
 
@@ -67,6 +74,16 @@ export const EditGame = () => {
                     }
                 });
                 imagePath = response.data.imagePath;
+            }
+
+            if (gameFile) {
+                const formData = new FormData();
+                formData.append('file', gameFile);
+                await API.post(`/GameUpload/upload/${id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
             }
 
             const gameData = {
@@ -118,6 +135,10 @@ export const EditGame = () => {
                 <div>
                     <label htmlFor="image">Image</label>
                     <input id="image" type="file" onChange={handleImageChange} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                    <label htmlFor="gameFile">Game File (.zip)</label>
+                    <input id="gameFile" type="file" onChange={handleGameFileChange} className="w-full px-3 py-2 border rounded-md" accept=".zip" />
                 </div>
                 <div className="flex space-x-4">
                     <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Update Game</button>
