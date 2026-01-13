@@ -7,6 +7,7 @@ using SEBIZ.Extensions;
 using SEBIZ.Service;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.ConfigureCors(builder.Configuration);
@@ -54,13 +55,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+// Configure MIME types for Godot exports
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".wasm"] = "application/wasm";
+provider.Mappings[".js"] = "application/javascript";
+provider.Mappings[".pck"] = "application/octet-stream";
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
            Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
-    RequestPath = ""
+    RequestPath = "",
+    ContentTypeProvider = provider
 });
 
 app.UseAuthentication();

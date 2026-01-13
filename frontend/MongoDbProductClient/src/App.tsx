@@ -8,6 +8,7 @@ import { Register } from "./Component/Register"
 import { Login } from "./Component/Login"
 import { MyLibrary } from "./Component/MyLibrary"
 import UserInfo from "./Component/UserInfo"
+import { Play } from "./Component/Play"
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/my-library" element={<MyLibrary />} />
           <Route path="/user-info" element={<UserInfo />} />
+          <Route path="/Play/:id" element={<Play />} />
         </Routes>
       </div>
     </Router>
