@@ -13,11 +13,9 @@ namespace SEBIZ.Service
     {
         private readonly IMongoCollection<Game> _gamesCollection;
 
-        public GameService(IOptions<MongoDBSettings> mongoDBSettings)
+        public GameService(AppDbContext context)
         {
-            var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
-            var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.CollectionName);
+            _gamesCollection = context.GameCollection;
         }
 
         public async Task<GameDto> CreateGameAsync(CreateGameDto dto)

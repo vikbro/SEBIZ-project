@@ -12,13 +12,13 @@ namespace SEBIZ.Service
     {
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Game> _gamesCollection;
+        private readonly IMongoCollection<GameUsage> _gameUsagesCollection;
 
-        public UserService(IOptions<MongoDBSettings> mongoDBSettings)
+        public UserService(AppDbContext context)
         {
-            var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
-            var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _usersCollection = mongoDatabase.GetCollection<User>("Users"); // Assuming a "Users" collection
-            _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.CollectionName);
+            _usersCollection = context.Users;
+            _gamesCollection = context.GameCollection;
+            _gameUsagesCollection = context.GameUsages;
         }
 
         public async Task<UserDto> RegisterAsync(RegisterUserDto dto)
@@ -80,6 +80,28 @@ namespace SEBIZ.Service
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return System.Convert.ToBase64String(hashedBytes);
             }
+        }
+
+        public async Task<int> GetTotalPlayTime(string userId)
+        {
+            var pipeline = new BsonDocument[]
+            {
+                new BsonDocument("$match", new BsonDocument("UserId", userId)),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", "$UserId" },
+                    { "totalMinutes", new BsonDocument("$sum", "$MinutesPlayed") }
+                })
+            };
+
+            var result = await _gameUsagesCollection.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+
+            if (result != null && result.Contains("totalMinutes"))
+            {
+                return result["totalMinutes"].AsInt32;
+            }
+
+            return 0;
         }
     }
 }

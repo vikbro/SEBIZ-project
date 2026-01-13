@@ -33,5 +33,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("ImagePath")]
         public string? ImagePath { get; set; }
+
+        [BsonElement("GameUrl")]
+        public string? GameUrl { get; set; }
     }
 }

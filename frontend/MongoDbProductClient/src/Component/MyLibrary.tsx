@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../API/api';
 import type { Game } from '../Interface/baseInterface';
 
@@ -6,7 +7,7 @@ export const MyLibrary = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [playMessage, setPlayMessage] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLibrary = async () => {
@@ -24,27 +25,11 @@ export const MyLibrary = () => {
         fetchLibrary();
     }, []);
 
-    const handlePlayGame = async (gameId: string) => {
-        const userString = localStorage.getItem('user');
-        if (!userString) {
-            setPlayMessage('You must be logged in to play.');
-            return;
-        }
-        const user = JSON.parse(userString);
-
-        // Simulate playing for 1 minute
-        const minutesPlayed = 1;
-
-        try {
-            await API.post('/GameUsage/update', {
-                userId: user.id,
-                gameId,
-                minutesPlayed
-            });
-            setPlayMessage(`You "played" ${games.find(g => g.id === gameId)?.name} for ${minutesPlayed} minute.`);
-        } catch (error) {
-            setPlayMessage('Failed to record play time.');
-            console.error(error);
+    const handlePlayGame = (game: Game) => {
+        if (game.gameUrl) {
+            navigate('/game/play', { state: { gameUrl: game.gameUrl, gameId: game.id } });
+        } else {
+            alert("Game files are not available.");
         }
     };
 

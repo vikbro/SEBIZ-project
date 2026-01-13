@@ -10,6 +10,7 @@ export interface Game {
    tags: string[];
    createdById: string;
    imagePath?: string;
+   gameUrl?: string;
 }
 
 export interface User {

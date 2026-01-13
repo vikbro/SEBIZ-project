@@ -8,26 +8,17 @@ namespace SEBIZ.Data
     public class AppDbContext
     {
         public IMongoCollection<Game> GameCollection { get; }
+        public IMongoCollection<GameUsage> GameUsages { get; }
+        public IMongoCollection<User> Users { get; }
 
         public AppDbContext(IOptions<MongoDBSettings> mongoDbSettings)
         {
-            //This gives us connecton to MongoDB server
-            MongoClient mongoClient = new MongoClient(
-                mongoDbSettings.Value.ConnectionURI);
+            MongoClient mongoClient = new MongoClient(mongoDbSettings.Value.ConnectionURI);
+            IMongoDatabase database = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
 
-            //Conntecting to specific database
-            IMongoDatabase database = mongoClient.GetDatabase(
-                mongoDbSettings.Value.DatabaseName);
-
-            //Connecting to specific collection
-            GameCollection = database.GetCollection<Game>(
-                mongoDbSettings.Value.CollectionName);
-
-            var mongoDatabase = mongoClient.GetDatabase(
-                mongoDbSettings.Value.DatabaseName);
-
-            GameCollection = mongoDatabase.GetCollection<Game>(
-                mongoDbSettings.Value.CollectionName);
+            GameCollection = database.GetCollection<Game>(mongoDbSettings.Value.GamesCollectionName);
+            GameUsages = database.GetCollection<GameUsage>(mongoDbSettings.Value.GameUsageCollectionName);
+            Users = database.GetCollection<User>(mongoDbSettings.Value.UsersCollectionName);
         }
     }
 }

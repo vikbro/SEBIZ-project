@@ -19,6 +19,8 @@ builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+builder.Services.AddScoped<IGameUploadService, GameUploadService>();
+builder.Services.AddScoped<IGameUsageService, GameUsageService>();
 
 var app = builder.Build();
 app.UseCors("CorsPolicy");
