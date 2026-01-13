@@ -12,13 +12,30 @@ namespace SEBIZ.Controllers
         private readonly IGameService _gameService;
         private readonly IRecommendationService _recommendationService;
         private readonly ILogger<GameController> _logger;
+        private readonly IPlaytimeService _playtimeService;
 
 
-        public GameController(IGameService gameService, IRecommendationService recommendationService, ILogger<GameController> logger)
+        public GameController(IGameService gameService, IRecommendationService recommendationService, ILogger<GameController> logger, IPlaytimeService playtimeService)
         {
             _gameService = gameService;
             _recommendationService = recommendationService;
             _logger = logger;
+            _playtimeService = playtimeService;
+        }
+
+
+        [HttpPost("playtime/start")]
+        public async Task<IActionResult> StartPlaytime([FromBody] PlaytimeRequest request)
+        {
+            await _playtimeService.StartPlaytimeAsync(request.UserId, request.GameId);
+            return Ok();
+        }
+
+        [HttpPost("playtime/stop")]
+        public async Task<IActionResult> StopPlaytime([FromBody] PlaytimeRequest request)
+        {
+            await _playtimeService.StopPlaytimeAsync(request.UserId, request.GameId);
+            return Ok();
         }
 
 
