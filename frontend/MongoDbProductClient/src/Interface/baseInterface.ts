@@ -25,3 +25,15 @@ export interface GameUsage {
     lastPlayed: Date;
     gameTitle: string;
 }
+
+export interface Transaction {
+    id: string;
+    buyerId: string;
+    buyerUsername: string;
+    sellerId: string;
+    sellerUsername: string;
+    gameId: string;
+    gameTitle: string;
+    amount: number;
+    transactionDate: Date;
+}

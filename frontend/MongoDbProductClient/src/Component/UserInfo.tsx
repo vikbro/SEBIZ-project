@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../API/api';
-import type { User, GameUsage } from '../Interface/baseInterface';
+import type { User, GameUsage, Transaction } from '../Interface/baseInterface';
 
 const UserInfo = () => {
     const [user, setUser] = useState<User | null>(null);
     const [gameUsages, setGameUsages] = useState<GameUsage[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [amount, setAmount] = useState(0);
     const [showModal, setShowModal] = useState(false);
+    const [activeTab, setActiveTab] = useState<'playtime' | 'transactions'>('playtime');
 
     useEffect(() => {
         const fetchUserAndGameUsage = async () => {
@@ -17,6 +19,9 @@ const UserInfo = () => {
                 if (userResponse.data) {
                     const usageResponse = await api.get(`/GameUsage/WithGameDetails/me`);
                     setGameUsages(usageResponse.data);
+
+                    const transactionResponse = await api.get('/User/transactions');
+                    setTransactions(transactionResponse.data);
                 }
 
             } catch (error) {
@@ -47,6 +52,10 @@ const UserInfo = () => {
         return <div>Loading...</div>;
     }
 
+    const formatDate = (date: Date) => {
+        return new Date(date).toLocaleDateString() + ' ' + new Date(date).toLocaleTimeString();
+    };
+
     return (
         <div className="container mx-auto mt-10">
             <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -61,24 +70,91 @@ const UserInfo = () => {
                 </button>
             </div>
 
-            <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold mb-4">Game Playtime</h2>
-                <table className="min-w-full">
-                    <thead>
-                        <tr>
-                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Game Title</th>
-                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Playtime (minutes)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {gameUsages.map((usage, index) => (
-                            <tr key={index}>
-                                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.gameTitle}</td>
-                                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.playTimeMinutes}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {/* Tabs */}
+            <div className="mt-6 bg-white rounded-lg shadow-lg">
+                <div className="flex border-b">
+                    <button
+                        onClick={() => setActiveTab('playtime')}
+                        className={`flex-1 px-6 py-3 font-semibold text-center ${activeTab === 'playtime' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+                    >
+                        Playtime History
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('transactions')}
+                        className={`flex-1 px-6 py-3 font-semibold text-center ${activeTab === 'transactions' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+                    >
+                        Purchase History
+                    </button>
+                </div>
+
+                {/* Playtime Tab */}
+                {activeTab === 'playtime' && (
+                    <div className="p-6">
+                        <h2 className="text-xl font-bold mb-4">Game Playtime</h2>
+                        {gameUsages.length === 0 ? (
+                            <p className="text-gray-500">No playtime data available.</p>
+                        ) : (
+                            <table className="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Game Title</th>
+                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Playtime (minutes)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {gameUsages.map((usage, index) => (
+                                        <tr key={index}>
+                                            <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.gameTitle}</td>
+                                            <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">{usage.playTimeMinutes}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
+
+                {/* Transactions Tab */}
+                {activeTab === 'transactions' && (
+                    <div className="p-6">
+                        <h2 className="text-xl font-bold mb-4">Purchase History</h2>
+                        {transactions.length === 0 ? (
+                            <p className="text-gray-500">No purchase history available.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead>
+                                        <tr>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Game</th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">From/To</th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {transactions.map((transaction) => {
+                                            const isBuyer = transaction.buyerId === user.id;
+                                            return (
+                                                <tr key={transaction.id}>
+                                                    <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500 font-semibold">{transaction.gameTitle}</td>
+                                                    <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">${transaction.amount.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                                                        {isBuyer ? (
+                                                            <span className="text-red-600">Paid to {transaction.sellerUsername}</span>
+                                                        ) : (
+                                                            <span className="text-green-600">Received from {transaction.buyerUsername}</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-500 text-sm">{formatDate(transaction.transactionDate)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {showModal && (

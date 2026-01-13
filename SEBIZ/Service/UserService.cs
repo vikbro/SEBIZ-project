@@ -17,14 +17,16 @@ namespace SEBIZ.Service
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Game> _gamesCollection;
         private readonly IConfiguration _configuration;
+        private readonly ITransactionService _transactionService;
 
-        public UserService(IOptions<MongoDBSettings> mongoDBSettings, IConfiguration configuration)
+        public UserService(IOptions<MongoDBSettings> mongoDBSettings, IConfiguration configuration, ITransactionService transactionService)
         {
             var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _usersCollection = mongoDatabase.GetCollection<User>(mongoDBSettings.Value.UsersCollectionName);
             _gamesCollection = mongoDatabase.GetCollection<Game>(mongoDBSettings.Value.GamesCollectionName);
             _configuration = configuration;
+            _transactionService = transactionService;
         }
 
         public async Task<UserDto> RegisterAsync(RegisterUserDto dto)
@@ -93,6 +95,9 @@ namespace SEBIZ.Service
                 user.Balance -= game.Price ?? 0;
                 user.OwnedGamesIds.Add(gameId);
                 await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
+
+                // Create transaction record
+                await _transactionService.CreateTransactionAsync(userId, gameId);
             }
         }
 

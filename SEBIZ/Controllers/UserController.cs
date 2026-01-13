@@ -13,11 +13,13 @@ namespace SEBIZ.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ITransactionService _transactionService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, ILogger<UserController> logger)
+        public UserController(IUserService userService, ITransactionService transactionService, ILogger<UserController> logger)
         {
             _userService = userService;
+            _transactionService = transactionService;
             _logger = logger;
         }
 
@@ -150,5 +152,30 @@ namespace SEBIZ.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [Authorize]
+        [HttpGet("transactions")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<TransactionDto>>> GetTransactions()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var transactions = await _transactionService.GetUserTransactionsAsync(userId);
+                return Ok(transactions);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting user transactions");
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
+
