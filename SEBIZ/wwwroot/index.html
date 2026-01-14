@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Play Game</title>
+</head>
+<body>
+    <h1>Godot Game</h1>
+    <button id="playButton">Play Game</button>
+    <br />
+    <iframe id="gameFrame" width="800" height="600" style="display: none;"></iframe>
+
+    <script>
+        const playButton = document.getElementById('playButton');
+        const gameFrame = document.getElementById('gameFrame');
+        const userId = 'test-user'; // Replace with actual user ID
+        const gameId = 'godot-game'; // Replace with actual game ID
+
+        playButton.addEventListener('click', () => {
+            gameFrame.src = '/api/webgame/godot';
+            gameFrame.style.display = 'block';
+            playButton.style.display = 'none';
+
+            fetch('/api/game/playtime/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, gameId }),
+            });
+        });
+
+        window.addEventListener('beforeunload', () => {
+            fetch('/api/game/playtime/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, gameId }),
+            });
+        });
+    </script>
+</body>
+</html>
