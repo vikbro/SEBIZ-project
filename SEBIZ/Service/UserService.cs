@@ -77,7 +77,7 @@ namespace SEBIZ.Service
             };
 
             await _usersCollection.InsertOneAsync(user);
-            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty);
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty, user.Role);
         }
 
         public async Task<UserDto> LoginAsync(LoginUserDto dto)
@@ -101,7 +101,7 @@ namespace SEBIZ.Service
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, tokenString);
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, tokenString, user.Role);
         }
 
         public async Task PurchaseGameAsync(string userId, string gameId)
@@ -185,7 +185,7 @@ namespace SEBIZ.Service
                 throw new MongoException($"User with id {userId} not found");
             }
 
-            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty);
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty, user.Role);
         }
 
         public async Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId)
@@ -197,7 +197,7 @@ namespace SEBIZ.Service
             }
 
             var ownedGames = await _gamesCollection.Find(g => user.OwnedGamesIds.Contains(g.Id)).ToListAsync();
-            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName));
+            return ownedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName, g.GameFilePath, g.GameFileName));
         }
 
         public async Task<UserDto> GetUserByIdAsync(string userId)
@@ -208,7 +208,41 @@ namespace SEBIZ.Service
                 throw new MongoException($"User with id {userId} not found");
             }
 
-            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty);
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty, user.Role);
+        }
+
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        {
+            var users = await _usersCollection.Find(_ => true).ToListAsync();
+            return users.Select(u => new UserDto(u.Id, u.Username, u.Email, u.OwnedGamesIds, u.Balance, string.Empty, u.Role));
+        }
+
+        public async Task<UserDto> PromoteToAdminAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            user.Role = "Admin";
+            await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
+
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty, user.Role);
+        }
+
+        public async Task<UserDto> DemoteAdminAsync(string userId)
+        {
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new MongoException($"User with id {userId} not found");
+            }
+
+            user.Role = "User";
+            await _usersCollection.ReplaceOneAsync(u => u.Id == userId, user);
+
+            return new UserDto(user.Id, user.Username, user.Email, user.OwnedGamesIds, user.Balance, string.Empty, user.Role);
         }
     }
 }

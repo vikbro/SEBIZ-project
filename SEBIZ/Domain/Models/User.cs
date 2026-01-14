@@ -24,5 +24,8 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("Balance")]
         public double Balance { get; set; } = 0;
+
+        [BsonElement("Role")]
+        public string Role { get; set; } = "User";
     }
 }

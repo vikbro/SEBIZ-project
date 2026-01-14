@@ -39,5 +39,11 @@ namespace SEBIZ.Domain.Models
 
         [BsonElement("FileName")]
         public string? FileName { get; set; }
+
+        [BsonElement("GameFilePath")]
+        public string? GameFilePath { get; set; }
+
+        [BsonElement("GameFileName")]
+        public string? GameFileName { get; set; }
     }
 }

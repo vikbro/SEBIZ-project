@@ -51,7 +51,7 @@ namespace SEBIZ.Service
                 SellerId = game.CreatedById,
                 SellerUsername = seller.Username,
                 GameId = gameId,
-                GameTitle = game.Name,
+                GameTitle = game.Name ?? "Unknown Game",
                 Amount = game.Price ?? 0,
                 TransactionDate = DateTime.UtcNow
             };
@@ -77,6 +77,28 @@ namespace SEBIZ.Service
             // Get all transactions where user is either buyer or seller
             var transactions = await _transactionCollection
                 .Find(t => t.BuyerId == userId || t.SellerId == userId)
+                .SortByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+            return transactions.Select(t => new TransactionDto
+            {
+                Id = t.Id,
+                BuyerId = t.BuyerId,
+                BuyerUsername = t.BuyerUsername,
+                SellerId = t.SellerId,
+                SellerUsername = t.SellerUsername,
+                GameId = t.GameId,
+                GameTitle = t.GameTitle,
+                Amount = t.Amount,
+                TransactionDate = t.TransactionDate
+            });
+        }
+
+        public async Task<IEnumerable<TransactionDto>> GetAllTransactionsAsync()
+        {
+            // Get all transactions
+            var transactions = await _transactionCollection
+                .Find(_ => true)
                 .SortByDescending(t => t.TransactionDate)
                 .ToListAsync();
 

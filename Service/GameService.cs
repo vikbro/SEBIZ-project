@@ -35,7 +35,7 @@ namespace SEBIZ.Service
             };
 
             await _gamesCollection.InsertOneAsync(game);
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById, game.FileName, game.GameFilePath, game.GameFileName);
         }
 
         public async Task DeleteGameAsync(string id)
@@ -58,7 +58,7 @@ namespace SEBIZ.Service
         public async Task<IEnumerable<GameDto>> GetAllGamesAsync()
         {
             var games = await _gamesCollection.Find(_ => true).ToListAsync();
-            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath));
+            return games.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName, g.GameFilePath, g.GameFileName));
         }
 
         public async Task<GameDto> GetGameByIdAsync(string id)
@@ -68,7 +68,7 @@ namespace SEBIZ.Service
             {
                 throw new MongoException($"Game with id {id} not found");
             }
-            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath);
+            return new GameDto(game.Id, game.Name, game.Description, game.Price, game.Genre, game.Developer, game.ReleaseDate, game.Tags, game.ImagePath, game.CreatedById, game.FileName, game.GameFilePath, game.GameFileName);
         }
 
         public async Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto)
@@ -106,7 +106,7 @@ namespace SEBIZ.Service
                 }
             }
 
-            return new GameDto(updatedGame.Id, updatedGame.Name, updatedGame.Description, updatedGame.Price, updatedGame.Genre, updatedGame.Developer, updatedGame.ReleaseDate, updatedGame.Tags, updatedGame.ImagePath);
+            return new GameDto(updatedGame.Id, updatedGame.Name, updatedGame.Description, updatedGame.Price, updatedGame.Genre, updatedGame.Developer, updatedGame.ReleaseDate, updatedGame.Tags, updatedGame.ImagePath, updatedGame.CreatedById, updatedGame.FileName, updatedGame.GameFilePath, updatedGame.GameFileName);
         }
     }
 }

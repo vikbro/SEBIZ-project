@@ -12,5 +12,7 @@ namespace SEBIZ.Service
         Task<IEnumerable<GameDto>> GetAllGamesAsync();
         Task<GameDto> UpdateGameAsync(string id, UpdateGameDto dto, string userId);
         Task DeleteGameAsync(string id, string userId);
+        Task<GameDto> UpdateGameAsAdminAsync(string id, UpdateGameDto dto);
+        Task DeleteGameAsAdminAsync(string id);
     }
 }

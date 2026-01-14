@@ -1,4 +1,5 @@
 using SEBIZ.Domain.Contracts;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SEBIZ.Service
@@ -12,5 +13,8 @@ namespace SEBIZ.Service
         Task<UserDto> GetMeAsync(string userId);
         Task<IEnumerable<GameDto>> GetOwnedGamesAsync(string userId);
         Task<UserDto> GetUserByIdAsync(string userId);
+        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<UserDto> PromoteToAdminAsync(string userId);
+        Task<UserDto> DemoteAdminAsync(string userId);
     }
 }

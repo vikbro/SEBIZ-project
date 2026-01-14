@@ -40,6 +40,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<AppDbContext>();
 builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();

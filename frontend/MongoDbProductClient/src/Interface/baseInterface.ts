@@ -10,6 +10,9 @@ export interface Game {
    tags: string[];
    createdById: string;
    imagePath?: string;
+   fileName?: string;
+   gameFilePath?: string;
+   gameFileName?: string;
 }
 
 export interface User {
@@ -18,17 +21,7 @@ export interface User {
     email: string;
     ownedGamesIds: string[];
     balance: number;
-}
-
-export interface GameUsage {
-    gameId: string;
-    playTimeMinutes: number;
-    lastPlayed: Date;
-    gameTitle: string;
-}
-
-export interface Transaction {
-    id: string;
+    role?: string;
     buyerId: string;
     buyerUsername: string;
     sellerId: string;

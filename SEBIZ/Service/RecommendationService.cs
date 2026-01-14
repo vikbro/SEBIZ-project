@@ -52,7 +52,7 @@ namespace SEBIZ.Service
                 g => favoriteGenres.Contains(g.Genre) && !user.OwnedGamesIds.Contains(g.Id)
             ).Limit(10).ToListAsync();
 
-            return recommendedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName));
+            return recommendedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName, g.GameFilePath, g.GameFileName));
         }
     }
 }

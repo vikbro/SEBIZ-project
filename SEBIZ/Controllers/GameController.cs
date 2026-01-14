@@ -162,5 +162,74 @@ namespace SEBIZ.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // Admin endpoints
+        [Authorize]
+        [HttpDelete("admin/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> DeleteGameAsAdmin([FromRoute] string id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                // Check if user is admin
+                var userService = HttpContext.RequestServices.GetRequiredService<IUserService>();
+                var user = await userService.GetMeAsync(userId);
+                if (user.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                await _gameService.DeleteGameAsAdminAsync(id);
+                return NoContent();
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error deleting game {GameId} as admin", id);
+                return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("admin/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<GameDto>> UpdateGameAsAdmin([FromRoute] string id, [FromBody] UpdateGameDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                // Check if user is admin
+                var userService = HttpContext.RequestServices.GetRequiredService<IUserService>();
+                var user = await userService.GetMeAsync(userId);
+                if (user.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                var game = await _gameService.UpdateGameAsAdminAsync(id, dto);
+                return Ok(game);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error updating game {GameId} as admin", id);
+                return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
+            }
+        }
     }
 }

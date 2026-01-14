@@ -10,7 +10,7 @@ export const Play = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     
-    const playtimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const playtimeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const accumulatedSecondsRef = useRef<number>(0);
 
     useEffect(() => {
@@ -60,7 +60,7 @@ export const Play = () => {
                 // Send final playtime update
                 const seconds = accumulatedSecondsRef.current;
                 const data = JSON.stringify({ gameId: game.id, secondsPlayed: seconds });
-                const headers = { 'Content-Type': 'application/json' };
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
                 const token = localStorage.getItem('user') 
                     ? JSON.parse(localStorage.getItem('user')!).token 
                     : null;
@@ -158,7 +158,7 @@ export const Play = () => {
                 Back
             </button>
 
-            {/* Embed Godot game via iframe */}
+            {/* Embed game via iframe - all games use the same web build */}
             <iframe
                 src={`${BACKEND_URL}/games/web/index.html`}
                 style={{
@@ -168,6 +168,7 @@ export const Play = () => {
                     display: 'block',
                 }}
                 title={`Play ${game.name}`}
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
         </div>
     );

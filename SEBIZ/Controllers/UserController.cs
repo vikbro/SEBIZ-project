@@ -176,6 +176,133 @@ namespace SEBIZ.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // Admin endpoints
+        [Authorize]
+        [HttpGet("admin/all-transactions")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<TransactionDto>>> GetAllTransactions()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var user = await _userService.GetMeAsync(userId);
+                if (user.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                var transactions = await _transactionService.GetAllTransactionsAsync();
+                return Ok(transactions);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting all transactions");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("admin/all-users")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var user = await _userService.GetMeAsync(userId);
+                if (user.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error getting all users");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("admin/promote/{userId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UserDto>> PromoteToAdmin(string userId)
+        {
+            try
+            {
+                var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(adminId))
+                {
+                    return Unauthorized();
+                }
+
+                var admin = await _userService.GetMeAsync(adminId);
+                if (admin.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                var promotedUser = await _userService.PromoteToAdminAsync(userId);
+                return Ok(promotedUser);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error promoting user to admin");
+                return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("admin/demote/{userId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UserDto>> DemoteAdmin(string userId)
+        {
+            try
+            {
+                var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(adminId))
+                {
+                    return Unauthorized();
+                }
+
+                var admin = await _userService.GetMeAsync(adminId);
+                if (admin.Role != "Admin")
+                {
+                    return Forbid();
+                }
+
+                var demotedUser = await _userService.DemoteAdminAsync(userId);
+                return Ok(demotedUser);
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "Error demoting admin");
+                return ex.Message.Contains("not found") ? NotFound(ex.Message) : BadRequest(ex.Message);
+            }
+        }
     }
 }
 

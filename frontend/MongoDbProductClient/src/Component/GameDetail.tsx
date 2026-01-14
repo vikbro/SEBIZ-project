@@ -11,6 +11,7 @@ export const GameDetail = () => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [isOwner, setIsOwner] = useState(false);
+    const [isGameOwned, setIsGameOwned] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -43,6 +44,10 @@ export const GameDetail = () => {
             if (user.id === game.createdById) {
                 setIsOwner(true);
             }
+            // Check if user owns the game (in their library)
+            if (user.ownedGamesIds && user.ownedGamesIds.includes(game.id)) {
+                setIsGameOwned(true);
+            }
         }
     }, [user, game]);
 
@@ -54,7 +59,7 @@ export const GameDetail = () => {
         if (!id) return;
 
         try {
-            if (user.balance < game.price) {
+            if (!game || user.balance < game.price) {
                 setMessage('Insufficient balance to purchase this game.');
                 return;
             }
@@ -116,9 +121,14 @@ export const GameDetail = () => {
                     ${game.price?.toFixed(2)}
                 </div>
                 <div className="flex space-x-4">
-                    {!isOwner && (
+                    {!isOwner && !isGameOwned && (
                         <button onClick={handleAddToLibrary} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
                             Add to Library
+                        </button>
+                    )}
+                    {(isOwner || isGameOwned) && game.gameFileName && (
+                        <button onClick={() => navigate(`/Play/${id}`)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                            Play Game
                         </button>
                     )}
                     {isOwner && (

@@ -8,5 +8,6 @@ namespace SEBIZ.Service
     {
         Task<TransactionDto> CreateTransactionAsync(string buyerId, string gameId);
         Task<IEnumerable<TransactionDto>> GetUserTransactionsAsync(string userId);
+        Task<IEnumerable<TransactionDto>> GetAllTransactionsAsync();
     }
 }
