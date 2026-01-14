@@ -1,0 +1,164 @@
+@startuml SEBIZ_UseCaseDiagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam actorBackgroundColor #E1F5FF
+skinparam usecaseBackgroundColor #F0F0F0
+skinparam usecase {
+  BackgroundColor #F0F0F0
+  BorderColor #333333
+  ArrowColor #333333
+  ActorBackgroundColor #E1F5FF
+}
+
+title SEBIZ Platform - Use Case Diagram
+
+left to right direction
+
+' Actors
+actor "Regular User" as User
+actor "Game Developer" as Developer
+actor "Admin" as Admin
+
+' Main System
+rectangle "SEBIZ Platform" {
+
+  ' User Authentication Use Cases
+  package "Authentication & Account" as Auth {
+    usecase "Register" as UC_Register
+    usecase "Login" as UC_Login
+    usecase "View Profile" as UC_ViewProfile
+    usecase "Edit Profile" as UC_EditProfile
+    usecase "Change Password" as UC_ChangePassword
+    usecase "Logout" as UC_Logout
+  }
+
+  ' Game Management Use Cases
+  package "Game Management" as GameMgmt {
+    usecase "Browse Games" as UC_BrowseGames
+    usecase "Search Games" as UC_SearchGames
+    usecase "View Game Details" as UC_ViewGameDetails
+    usecase "Filter by Genre" as UC_FilterGenre
+    usecase "Upload Game" as UC_UploadGame
+    usecase "Edit Game Info" as UC_EditGameInfo
+    usecase "Delete Game" as UC_DeleteGame
+  }
+
+  ' Purchase & Balance Use Cases
+  package "Transactions & Balance" as Transactions {
+    usecase "Add Funds (Deposit)" as UC_Deposit
+    usecase "View Balance" as UC_ViewBalance
+    usecase "View Transaction History" as UC_ViewTransactions
+    usecase "Buy Game" as UC_BuyGame
+    usecase "Process Payment" as UC_ProcessPayment
+    usecase "Get Refund" as UC_Refund
+  }
+
+  ' Game Play Use Cases
+  package "Game Play & Usage" as GamePlay {
+    usecase "Play Game" as UC_PlayGame
+    usecase "Record Game Session" as UC_RecordSession
+    usecase "View Game Statistics" as UC_GameStats
+    usecase "View Game Library" as UC_ViewLibrary
+  }
+
+  ' Recommendation Use Cases
+  package "Recommendations" as Recommendations {
+    usecase "Get Personalized Recommendations" as UC_GetRecommendations
+    usecase "View Trending Games" as UC_ViewTrending
+    usecase "View Similar Games" as UC_SimilarGames
+  }
+
+  ' Email & Notifications
+  package "Communication" as Communication {
+    usecase "Receive Welcome Email" as UC_WelcomeEmail
+    usecase "Receive Purchase Confirmation" as UC_PurchaseEmail
+    usecase "Receive Deposit Confirmation" as UC_DepositEmail
+    usecase "Receive Recommendations" as UC_RecommendationEmail
+  }
+
+  ' Admin Use Cases
+  package "Administration" as Admin_Pkg {
+    usecase "Manage Users" as UC_ManageUsers
+    usecase "Approve Games" as UC_ApproveGames
+    usecase "Delete Games" as UC_AdminDeleteGames
+    usecase "View System Statistics" as UC_ViewStats
+    usecase "Generate Reports" as UC_Reports
+  }
+
+}
+
+' User (Regular User) Relationships
+User --> UC_Register
+User --> UC_Login
+User --> UC_Logout
+User --> UC_ViewProfile
+User --> UC_EditProfile
+User --> UC_ChangePassword
+
+User --> UC_BrowseGames
+User --> UC_SearchGames
+User --> UC_ViewGameDetails
+User --> UC_FilterGenre
+
+User --> UC_Deposit
+User --> UC_ViewBalance
+User --> UC_ViewTransactions
+User --> UC_BuyGame
+
+User --> UC_PlayGame
+User --> UC_ViewLibrary
+User --> UC_GameStats
+
+User --> UC_GetRecommendations
+User --> UC_ViewTrending
+User --> UC_SimilarGames
+
+User -.-> UC_WelcomeEmail : receives
+User -.-> UC_PurchaseEmail : receives
+User -.-> UC_DepositEmail : receives
+User -.-> UC_RecommendationEmail : receives
+
+' Developer (Game Developer) Relationships
+Developer --> UC_Register
+Developer --> UC_Login
+Developer --> UC_Logout
+
+Developer --> UC_ViewProfile
+Developer --> UC_EditProfile
+
+Developer --> UC_UploadGame
+Developer --> UC_EditGameInfo
+Developer --> UC_DeleteGame
+
+Developer --> UC_ViewGameDetails
+Developer --> UC_BrowseGames
+
+Developer --> UC_ViewTransactions
+Developer --> UC_ViewStats
+
+' Admin Relationships
+Admin --> UC_ManageUsers
+Admin --> UC_ApproveGames
+Admin --> UC_AdminDeleteGames
+Admin --> UC_ViewStats
+Admin --> UC_Reports
+
+' Use Case Dependencies (include/extend)
+UC_BuyGame ..|> UC_ProcessPayment : includes
+UC_BuyGame ..|> UC_PurchaseEmail : includes
+UC_BuyGame ..|> UC_RecordSession : includes
+
+UC_Deposit ..|> UC_ProcessPayment : includes
+UC_Deposit ..|> UC_DepositEmail : includes
+
+UC_Register ..|> UC_WelcomeEmail : includes
+
+UC_PlayGame ..|> UC_RecordSession : includes
+
+UC_GetRecommendations ..|> UC_SimilarGames : includes
+
+UC_ApproveGames --|> UC_ViewGameDetails : extends
+
+UC_RefundAsync --|> UC_ProcessPayment : extends
+
+@enduml

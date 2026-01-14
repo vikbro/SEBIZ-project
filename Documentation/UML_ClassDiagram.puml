@@ -1,0 +1,421 @@
+@startuml SEBIZ_ClassDiagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #F0F0F0
+skinparam classBorderColor #333333
+
+title SEBIZ System - Class Diagram
+
+package "Domain Models" {
+  class User {
+    - _id: ObjectId
+    - Username: string
+    - Email: string
+    - PasswordHash: string
+    - OwnedGamesIds: List<string>
+    - Balance: double
+    - Role: string {User, Admin}
+    - CreatedAt: DateTime
+    - UpdatedAt: DateTime
+    --
+    + GetUserDetails(): UserContract
+    + UpdateProfile(userData): void
+    + AddGameToLibrary(gameId): void
+    + RemoveGameFromLibrary(gameId): void
+    + GetBalance(): double
+    + UpdateBalance(amount): void
+  }
+
+  class Game {
+    - _id: ObjectId
+    - Name: string
+    - Description: string
+    - Price: double
+    - Genre: string
+    - Developer: string
+    - ReleaseDate: DateTime
+    - Tags: List<string>
+    - CreatedById: string
+    - ImagePath: string
+    - FileName: string
+    - GameFilePath: string
+    - GameFileName: string
+    - CreatedAt: DateTime
+    - UpdatedAt: DateTime
+    --
+    + GetGameDetails(): GameContract
+    + UpdateGame(gameData): void
+    + GetPrice(): double
+    + GetTags(): List<string>
+  }
+
+  class Transaction {
+    - _id: ObjectId
+    - UserId: string
+    - GameId: string {nullable}
+    - Amount: double
+    - Timestamp: DateTime
+    - Type: string {Purchase, Deposit}
+    - Status: string {Completed, Pending, Failed}
+    - Description: string
+    - PaymentGatewayId: string {nullable}
+    --
+    + ProcessTransaction(): bool
+    + GetTransactionDetails(): TransactionDto
+    + RefundTransaction(): bool
+    + UpdateStatus(status): void
+  }
+
+  class GameUsage {
+    - _id: ObjectId
+    - UserId: string
+    - GameId: string
+    - StartTime: DateTime
+    - EndTime: DateTime
+    - DurationMinutes: int
+    - SessionCount: int
+    - LastPlayedDate: DateTime
+    - TotalPlayTime: int
+    --
+    + RecordSession(startTime, endTime): void
+    + GetStatistics(): UsageStats
+    + IncrementSessionCount(): void
+    + GetTotalPlayTime(): int
+  }
+}
+
+package "Contracts (DTOs)" {
+  class UserContract {
+    - Id: string
+    - Username: string
+    - Email: string
+    - Balance: double
+    - OwnedGamesIds: List<string>
+    - Role: string
+  }
+
+  class GameContract {
+    - Id: string
+    - Name: string
+    - Description: string
+    - Price: double
+    - Genre: string
+    - Developer: string
+    - ReleaseDate: DateTime
+    - Tags: List<string>
+    - ImagePath: string
+  }
+
+  class TransactionDto {
+    - UserId: string
+    - GameId: string
+    - Amount: double
+    - Timestamp: DateTime
+    - Type: string
+    - Status: string
+  }
+
+  class BalanceContract {
+    - UserId: string
+    - CurrentBalance: double
+    - AmountToAdd: double
+    - PaymentMethod: string
+  }
+}
+
+package "Services (Business Logic)" {
+  interface IUserService {
+    + RegisterAsync(username, email, password): Task<UserContract>
+    + LoginAsync(email, password): Task<UserContract>
+    + GetUserByIdAsync(userId): Task<UserContract>
+    + UpdateUserAsync(userId, userData): Task<UserContract>
+    + GetAllUsersAsync(): Task<List<UserContract>>
+    + DeleteUserAsync(userId): Task<bool>
+    + UserOwnsGameAsync(userId, gameId): Task<bool>
+  }
+
+  interface IGameService {
+    + GetAllGamesAsync(): Task<List<GameContract>>
+    + GetGameByIdAsync(gameId): Task<GameContract>
+    + SearchGamesAsync(searchTerm): Task<List<GameContract>>
+    + CreateGameAsync(gameData, publisherId): Task<GameContract>
+    + UpdateGameAsync(gameId, gameData): Task<GameContract>
+    + DeleteGameAsync(gameId): Task<bool>
+    + GetGamesByPublisherAsync(publisherId): Task<List<GameContract>>
+    + GetGamesByGenreAsync(genre): Task<List<GameContract>>
+  }
+
+  interface ITransactionService {
+    + ProcessGamePurchaseAsync(userId, gameId, price): Task<bool>
+    + AddFundsAsync(userId, amount): Task<double>
+    + GetUserTransactionsAsync(userId): Task<List<TransactionDto>>
+    + GetBalanceAsync(userId): Task<double>
+    + HasSufficientBalanceAsync(userId, amount): Task<bool>
+    + RefundAsync(transactionId): Task<bool>
+  }
+
+  interface IRecommendationService {
+    + GetRecommendationsAsync(userId, count): Task<List<GameContract>>
+    + AnalyzeUserPreferencesAsync(userId): Task<void>
+    + GetTrendingGamesAsync(count): Task<List<GameContract>>
+    + GetRelatedGamesAsync(gameId, count): Task<List<GameContract>>
+    + UpdateRecommendationsAfterPlayAsync(userId, gameId): Task<void>
+  }
+
+  interface IGameUsageService {
+    + RecordGameUsageAsync(userId, gameId): Task<void>
+    + EndGameSessionAsync(userId, gameId, duration): Task<void>
+    + GetGameUsageStatsAsync(userId, gameId): Task<GameUsage>
+    + GetUserGameHistoryAsync(userId): Task<List<GameUsage>>
+    + GetMostPlayedGamesAsync(count): Task<List<string>>
+  }
+
+  interface IEmailService {
+    + SendWelcomeEmailAsync(email, username): Task<void>
+    + SendPurchaseConfirmationAsync(email, gameName, price): Task<void>
+    + SendDepositConfirmationAsync(email, amount): Task<void>
+    + SendRecommendationEmailAsync(email, gameName): Task<void>
+    + SendMonthlyReportAsync(email, stats): Task<void>
+  }
+
+  class UserService {
+    - _repository: IUserRepository
+    - _emailService: IEmailService
+    --
+    + RegisterAsync(username, email, password): Task<UserContract>
+    + LoginAsync(email, password): Task<UserContract>
+    + GenerateJWTToken(user): string
+    - HashPassword(password): string
+    - VerifyPassword(password, hash): bool
+  }
+
+  class GameService {
+    - _repository: IGameRepository
+    - _storageService: IStorageService
+    --
+    + GetAllGamesAsync(): Task<List<GameContract>>
+    + SearchGamesAsync(criteria): Task<List<GameContract>>
+    - ValidateGameData(gameData): bool
+  }
+
+  class TransactionService {
+    - _repository: ITransactionRepository
+    - _userService: IUserService
+    - _paymentService: IPaymentService
+    - _emailService: IEmailService
+    --
+    + ProcessGamePurchaseAsync(userId, gameId): Task<bool>
+    + ValidatePayment(user, amount): bool
+    - DeductBalance(userId, amount): void
+    - CreateTransactionRecord(data): void
+  }
+
+  class RecommendationService {
+    - _gameService: IGameService
+    - _gameUsageService: IGameUsageService
+    - _repository: IRecommendationRepository
+    --
+    + GetRecommendationsAsync(userId): Task<List<GameContract>>
+    - AnalyzeGenrePreferences(userId): List<string>
+    - FindSimilarGames(genres): List<GameContract>
+  }
+
+  class GameUsageService {
+    - _repository: IGameUsageRepository
+    - _gameService: IGameService
+    --
+    + RecordGameUsageAsync(userId, gameId): Task<void>
+    + GetStatisticsAsync(userId): Task<UsageStats>
+    - CalculateDuration(startTime, endTime): int
+  }
+
+  class EmailService {
+    - _sendGridClient: SendGridClient
+    - _configuration: IConfiguration
+    --
+    + SendEmailAsync(email, subject, body): Task<void>
+    - BuildEmailTemplate(templateName, data): string
+    - LogEmailSent(email, subject): void
+  }
+}
+
+package "Controllers (API Endpoints)" {
+  class UserController {
+    - _userService: IUserService
+    - _emailService: IEmailService
+    --
+    + POST Register(registerDto): Task<IActionResult>
+    + POST Login(loginDto): Task<IActionResult>
+    + GET GetProfile(): Task<IActionResult>
+    + PUT UpdateProfile(userId, profileDto): Task<IActionResult>
+    + GET GetBalance(userId): Task<IActionResult>
+  }
+
+  class GameController {
+    - _gameService: IGameService
+    - _transactionService: ITransactionService
+    --
+    + GET GetAllGames(page, pageSize): Task<IActionResult>
+    + GET GetGameById(gameId): Task<IActionResult>
+    + GET SearchGames(searchTerm): Task<IActionResult>
+    + POST CreateGame(gameDto): Task<IActionResult>
+    + PUT UpdateGame(gameId, gameDto): Task<IActionResult>
+    + DELETE DeleteGame(gameId): Task<IActionResult>
+    + POST BuyGame(gameId): Task<IActionResult>
+  }
+
+  class TransactionController {
+    - _transactionService: ITransactionService
+    - _emailService: IEmailService
+    --
+    + POST Deposit(amount): Task<IActionResult>
+    + GET GetTransactions(userId): Task<IActionResult>
+    + GET GetBalance(userId): Task<IActionResult>
+    + POST Refund(transactionId): Task<IActionResult>
+  }
+
+  class GameFileController {
+    - _fileService: IFileService
+    - _gameService: IGameService
+    --
+    + POST UploadGameFile(file, gameId): Task<IActionResult>
+    + GET DownloadGameFile(gameId): Task<FileResult>
+    + DELETE DeleteGameFile(gameId): Task<IActionResult>
+  }
+
+  class ImageController {
+    - _fileService: IFileService
+    --
+    + POST UploadImage(file): Task<IActionResult>
+    + GET GetImage(imageName): Task<FileResult>
+    + DELETE DeleteImage(imageName): Task<IActionResult>
+  }
+}
+
+package "Data Access Layer" {
+  interface IRepository<T> {
+    + GetByIdAsync(id): Task<T>
+    + GetAllAsync(): Task<List<T>>
+    + InsertAsync(entity): Task<void>
+    + UpdateAsync(entity): Task<void>
+    + DeleteAsync(id): Task<bool>
+  }
+
+  interface IUserRepository {
+    + GetByUsernameAsync(username): Task<User>
+    + GetByEmailAsync(email): Task<User>
+  }
+
+  interface IGameRepository {
+    + SearchAsync(criteria): Task<List<Game>>
+    + GetByGenreAsync(genre): Task<List<Game>>
+    + GetByPublisherAsync(publisherId): Task<List<Game>>
+  }
+
+  interface ITransactionRepository {
+    + GetByUserIdAsync(userId): Task<List<Transaction>>
+    + GetByStatusAsync(status): Task<List<Transaction>>
+  }
+
+  interface IGameUsageRepository {
+    + GetByUserIdAsync(userId): Task<List<GameUsage>>
+    + GetByGameIdAsync(gameId): Task<List<GameUsage>>
+  }
+
+  class AppDbContext {
+    - _mongoClient: MongoClient
+    - _database: IMongoDatabase
+    --
+    + GetUsersCollection(): IMongoCollection<User>
+    + GetGamesCollection(): IMongoCollection<Game>
+    + GetTransactionsCollection(): IMongoCollection<Transaction>
+    + GetGameUsageCollection(): IMongoCollection<GameUsage>
+    + ConnectAsync(): Task<void>
+  }
+}
+
+package "External Services" {
+  interface IPaymentService {
+    + ChargePaymentAsync(amount, cardToken): Task<PaymentResult>
+    + RefundAsync(transactionId): Task<bool>
+  }
+
+  interface IStorageService {
+    + UploadFileAsync(file, path): Task<string>
+    + DownloadFileAsync(path): Task<Stream>
+    + DeleteFileAsync(path): Task<bool>
+  }
+
+  class StripePaymentService {
+    - _stripeClient: IStripeClient
+    --
+    + ChargePaymentAsync(amount, token): Task<PaymentResult>
+    - ValidateCard(cardData): bool
+  }
+
+  class LocalStorageService {
+    - _wwwrootPath: string
+    --
+    + UploadFileAsync(file, folder): Task<string>
+    + SaveToFilesystem(data, path): void
+  }
+}
+
+' Relationships
+
+' Models
+User "1" -- "*" Game : owns (OwnedGamesIds)
+User "1" -- "*" Transaction : creates
+User "1" -- "*" GameUsage : records
+Game "1" -- "*" Transaction : purchased_in
+Game "1" -- "*" GameUsage : tracked_in
+
+' Contracts to Models
+UserContract -.-> User : maps
+GameContract -.-> Game : maps
+TransactionDto -.-> Transaction : maps
+
+' Services implement interfaces
+UserService ..|> IUserService
+GameService ..|> IGameService
+TransactionService ..|> ITransactionService
+RecommendationService ..|> IRecommendationService
+GameUsageService ..|> IGameUsageService
+EmailService ..|> IEmailService
+
+' Controllers use Services
+UserController --> IUserService : uses
+GameController --> IGameService : uses
+GameController --> ITransactionService : uses
+TransactionController --> ITransactionService : uses
+GameFileController --> IStorageService : uses
+ImageController --> IStorageService : uses
+
+' Services use other Services
+TransactionService --> IUserService : uses
+TransactionService --> IEmailService : uses
+TransactionService --> IPaymentService : uses
+RecommendationService --> IGameService : uses
+RecommendationService --> IGameUsageService : uses
+GameUsageService --> IGameService : uses
+
+' Services use Repositories
+UserService --> IUserRepository : uses
+GameService --> IGameRepository : uses
+TransactionService --> ITransactionRepository : uses
+GameUsageService --> IGameUsageRepository : uses
+
+' Repositories use AppDbContext
+IUserRepository --> AppDbContext : queries
+IGameRepository --> AppDbContext : queries
+ITransactionRepository --> AppDbContext : queries
+IGameUsageRepository --> AppDbContext : queries
+
+' External Services
+StripePaymentService ..|> IPaymentService
+LocalStorageService ..|> IStorageService
+
+TransactionService --> IPaymentService : calls
+GameService --> IStorageService : calls
+
+@enduml

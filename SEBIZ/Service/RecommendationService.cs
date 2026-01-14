@@ -35,22 +35,45 @@ namespace SEBIZ.Service
                 return Enumerable.Empty<GameDto>();
             }
 
-            var favoriteGenres = ownedGames
-                .Where(g => g.Genre != null)
-                .GroupBy(g => g.Genre)
-                .OrderByDescending(grp => grp.Count())
-                .Select(grp => grp.Key)
-                .Take(3) // Take top 3 genres
-                .ToList();
+            // Split comma-separated genres and flatten them
+            var genreCount = new Dictionary<string, int>();
+            foreach (var game in ownedGames)
+            {
+                if (!string.IsNullOrEmpty(game.Genre))
+                {
+                    var genres = game.Genre.Split(',').Select(g => g.Trim()).Where(g => !string.IsNullOrEmpty(g));
+                    foreach (var genre in genres)
+                    {
+                        if (genreCount.ContainsKey(genre))
+                            genreCount[genre]++;
+                        else
+                            genreCount[genre] = 1;
+                    }
+                }
+            }
 
-            if (!favoriteGenres.Any())
+            if (!genreCount.Any())
             {
                 return Enumerable.Empty<GameDto>();
             }
 
-            var recommendedGames = await _gamesCollection.Find(
-                g => favoriteGenres.Contains(g.Genre) && !user.OwnedGamesIds.Contains(g.Id)
-            ).Limit(10).ToListAsync();
+            var favoriteGenres = genreCount
+                .OrderByDescending(kvp => kvp.Value)
+                .Select(kvp => kvp.Key)
+                .Take(3) // Take top 3 genres
+                .ToList();
+
+            // Get all games not owned by user
+            var allGames = await _gamesCollection.Find(g => !user.OwnedGamesIds.Contains(g.Id)).ToListAsync();
+
+            // Filter games that contain at least one of the favorite genres
+            var recommendedGames = allGames
+                .Where(g => !string.IsNullOrEmpty(g.Genre) && 
+                    g.Genre.Split(',')
+                        .Select(genre => genre.Trim())
+                        .Any(genre => favoriteGenres.Contains(genre)))
+                .Take(3)
+                .ToList();
 
             return recommendedGames.Select(g => new GameDto(g.Id, g.Name, g.Description, g.Price, g.Genre, g.Developer, g.ReleaseDate, g.Tags, g.ImagePath, g.CreatedById, g.FileName, g.GameFilePath, g.GameFileName));
         }
