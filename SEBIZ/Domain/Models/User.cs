@@ -13,6 +13,9 @@ namespace SEBIZ.Domain.Models
         [BsonElement("Username")]
         public string Username { get; set; } = string.Empty;
 
+        [BsonElement("Email")]
+        public string Email { get; set; } = string.Empty;
+
         [BsonElement("PasswordHash")]
         public string PasswordHash { get; set; } = string.Empty;
 

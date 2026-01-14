@@ -45,6 +45,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddScoped<IGameUsageService, GameUsageService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<TempFileCleanupService>();
 
 var app = builder.Build();

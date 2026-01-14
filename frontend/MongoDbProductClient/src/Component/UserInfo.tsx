@@ -61,6 +61,7 @@ const UserInfo = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg">
                 <h1 className="text-2xl font-bold mb-4">User Information</h1>
                 <p><strong>Username:</strong> {user.username}</p>
+                <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Balance:</strong> ${user.balance}</p>
                 <button
                     onClick={() => setShowModal(true)}
