@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import type { Game } from '../Interface/baseInterface';
 import API from '../API/api';
 import { Recommendations } from './Recommendations';
+import { useTheme } from '../Context/ThemeContext';
 
 const GENRES = ['Action', 'Adventure', 'RPG', 'Shooters', 'Strategy', 'Simulation', 'Sports', 'Puzzle'];
 
 export const GameList = () => {
     const navigate = useNavigate();
+    const { theme } = useTheme();
     const [games, setGames] = useState<Game[]>([]);
     const [filteredGames, setFilteredGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
@@ -96,26 +98,40 @@ export const GameList = () => {
             {/* Recommendations Section - Displayed Above */}
             <Recommendations />
             
-            <h1 className="text-3xl font-bold text-gray-800 mb-8 mt-12">All Games</h1>
+            <h1 className={`text-3xl font-bold mb-8 mt-12 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+            }`}>All Games</h1>
 
             {/* Search and Filter Section */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className={`rounded-lg shadow-md p-6 mb-8 transition-colors duration-200 ${
+                theme === 'dark' 
+                    ? 'bg-gray-800 border border-gray-700' 
+                    : 'bg-white'
+            }`}>
                 {/* Search Bar */}
                 <div className="mb-6">
-                    <label htmlFor="search" className="block text-gray-700 font-semibold mb-2">Search Games</label>
+                    <label htmlFor="search" className={`block font-semibold mb-2 ${
+                        theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                    }`}>Search Games</label>
                     <input
                         id="search"
                         type="text"
                         placeholder="Search by name, description, or developer..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`w-full px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                            theme === 'dark'
+                                ? 'bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400'
+                                : 'border border-gray-300 text-gray-900'
+                        }`}
                     />
                 </div>
 
                 {/* Genre Filter */}
                 <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Filter by Genres</label>
+                    <label className={`block font-semibold mb-2 ${
+                        theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                    }`}>Filter by Genres</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {GENRES.map((genre) => (
                             <label key={genre} className="flex items-center">
@@ -125,7 +141,9 @@ export const GameList = () => {
                                     onChange={() => handleGenreChange(genre)}
                                     className="w-4 h-4 text-blue-600 rounded"
                                 />
-                                <span className="ml-2 text-gray-700">{genre}</span>
+                                <span className={`ml-2 ${
+                                    theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                                }`}>{genre}</span>
                             </label>
                         ))}
                     </div>
@@ -138,14 +156,20 @@ export const GameList = () => {
                             setSearchTerm('');
                             setSelectedGenres([]);
                         }}
-                        className="mt-4 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md"
+                        className={`mt-4 px-4 py-2 rounded-md transition-colors ${
+                            theme === 'dark'
+                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-100'
+                                : 'bg-gray-400 hover:bg-gray-500 text-white'
+                        }`}
                     >
                         Clear Filters
                     </button>
                 )}
 
                 {/* Results Count */}
-                <p className="mt-4 text-gray-600 font-semibold">
+                <p className={`mt-4 font-semibold ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>
                     Showing {filteredGames.length} of {games.length} games
                 </p>
             </div>
@@ -156,7 +180,11 @@ export const GameList = () => {
                     {filteredGames.map((game) => (
                         <div
                             key={game.id}
-                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                            className={`rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                                theme === 'dark'
+                                    ? 'bg-gray-800 border border-gray-700'
+                                    : 'bg-white'
+                            }`}
                         >
                             <img
                                 src={game.imagePath || '/uploads/placeholder.png'}
@@ -169,21 +197,29 @@ export const GameList = () => {
                                 }}
                             />
                             <div className="p-6">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                                <h2 className={`text-xl font-semibold mb-2 ${
+                                    theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                                }`}>
                                     {game.name || 'Unnamed Game'}
                                 </h2>
-                                <p className="text-gray-600 mb-4">
+                                <p className={`mb-4 ${
+                                    theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                                }`}>
                                     {game.description || 'No description available'}
                                 </p>
-                                <p className="text-gray-500 text-sm mb-2">Developer: {game.developer}</p>
-                                <p className="text-gray-500 text-sm mb-4">Genre: {game.genre}</p>
-                                <div className="flex justify-between items-center">
+                                <p className={`text-sm mb-2 ${
+                                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                }`}>Developer: {game.developer}</p>
+                                <p className={`text-sm mb-4 ${
+                                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                }`}>Genre: {game.genre}</p>
+                                <div className="flex justify-between items-center gap-2 flex-wrap">
                                     <span className="text-2xl font-bold text-blue-600">
                                         ${game.price?.toFixed(2) || 'N/A'}
                                     </span>
                                     <button
                                         onClick={() => navigate(`/game/${game.id}`)}
-                                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+                                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
                                     >
                                         View Details
                                     </button>
@@ -191,13 +227,13 @@ export const GameList = () => {
                                         <>
                                             <button
                                                 onClick={() => navigate(`/edit-game/${game.id}`)}
-                                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+                                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md transition-colors text-sm"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(game.id)}
-                                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors text-sm"
                                             >
                                                 Delete
                                             </button>
@@ -209,8 +245,14 @@ export const GameList = () => {
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                    <p className="text-gray-600 text-lg">No games found matching your search or filters.</p>
+                <div className={`text-center py-12 rounded-lg shadow-md transition-colors duration-200 ${
+                    theme === 'dark'
+                        ? 'bg-gray-800 border border-gray-700'
+                        : 'bg-white'
+                }`}>
+                    <p className={`text-lg ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                    }`}>No games found matching your search or filters.</p>
                 </div>
             )}
         </div>

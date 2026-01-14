@@ -10,11 +10,18 @@ import { MyLibrary } from "./Component/MyLibrary"
 import UserInfo from "./Component/UserInfo"
 import { Play } from "./Component/Play"
 import { AdminPanel } from "./Component/AdminPanel"
+import { ThemeProvider, useTheme } from "./Context/ThemeContext"
 
-function App() {
+function AppContent() {
+  const { theme } = useTheme();
+  
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className={`min-h-screen transition-colors duration-200 ${
+        theme === 'dark' 
+          ? 'bg-gray-900 text-gray-100' 
+          : 'bg-gray-100 text-gray-900'
+      }`}>
         <Navbar />
         <Routes>
           <Route path="/" element={<GameList />} />
@@ -30,6 +37,14 @@ function App() {
         </Routes>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

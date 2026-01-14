@@ -9,9 +9,11 @@ export const Play = () => {
     const [game, setGame] = useState<Game | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [hasOwned, setHasOwned] = useState(false);
     
     const playtimeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const accumulatedSecondsRef = useRef<number>(0);
+    const hasBeenUnloadedRef = useRef<boolean>(false);
 
     useEffect(() => {
         const fetchGame = async () => {
@@ -22,6 +24,21 @@ export const Play = () => {
                 }
                 const { data } = await API.get<Game>(`/Game/${id}`);
                 setGame(data);
+                
+                // Check if user owns the game by fetching user library
+                try {
+                    const userResponse = await API.get('/User/me');
+                    const ownedGames = userResponse.data.ownedGamesIds || [];
+                    const owned = ownedGames.includes(id);
+                    setHasOwned(owned);
+                    
+                    if (!owned) {
+                        setError('You do not own this game. Purchase it to play.');
+                    }
+                } catch (err) {
+                    setError('Failed to verify game ownership.');
+                    console.error(err);
+                }
             } catch (err) {
                 setError('Failed to load game.');
                 console.error(err);
@@ -35,9 +52,10 @@ export const Play = () => {
 
     // Start playtime tracking when game loads
     useEffect(() => {
-        if (game && !loading) {
+        if (game && !loading && hasOwned) {
             console.log(`Starting playtime tracking for game: ${game.id}`);
             accumulatedSecondsRef.current = 0;
+            hasBeenUnloadedRef.current = false;
 
             // Send playtime update every 60 seconds
             playtimeIntervalRef.current = setInterval(() => {
@@ -51,12 +69,15 @@ export const Play = () => {
                 clearInterval(playtimeIntervalRef.current);
             }
         };
-    }, [game, loading]);
+    }, [game, loading, hasOwned]);
 
     // Handle page unload (user closes tab/navigates away)
     useEffect(() => {
         const handleBeforeUnload = () => {
-            if (accumulatedSecondsRef.current > 0 && game) {
+            if (accumulatedSecondsRef.current > 0 && game && !hasBeenUnloadedRef.current) {
+                // Mark as unloaded to prevent double-sending
+                hasBeenUnloadedRef.current = true;
+                
                 // Send final playtime update
                 const seconds = accumulatedSecondsRef.current;
                 const data = JSON.stringify({ gameId: game.id, secondsPlayed: seconds });
@@ -100,6 +121,9 @@ export const Play = () => {
     };
 
     const handleBackClick = async () => {
+        // Mark as unloaded to prevent beforeunload from sending again
+        hasBeenUnloadedRef.current = true;
+        
         // Send final update before navigating away
         if (playtimeIntervalRef.current) {
             clearInterval(playtimeIntervalRef.current);
@@ -107,7 +131,14 @@ export const Play = () => {
         
         if (accumulatedSecondsRef.current > 0 && game) {
             try {
-                await sendPlaytimeUpdate(accumulatedSecondsRef.current);
+                // Send only the accumulated time without adding to it
+                const secondsToSend = accumulatedSecondsRef.current;
+                accumulatedSecondsRef.current = 0; // Reset to prevent double-sending
+                
+                await API.post('/Play/playtime/update', {
+                    gameId: game.id,
+                    secondsPlayed: secondsToSend,
+                });
             } catch (err) {
                 console.error('Error sending final playtime update:', err);
             }
@@ -124,7 +155,7 @@ export const Play = () => {
         );
     }
 
-    if (error || !game) {
+    if (error || !game || !hasOwned) {
         return (
             <div className="container mx-auto px-4 py-8">
                 <button
@@ -133,7 +164,7 @@ export const Play = () => {
                 >
                     Back
                 </button>
-                <div className="text-red-500 text-center mt-10">{error || 'Game not found'}</div>
+                <div className="text-red-500 text-center mt-10">{error || 'Game not found or not owned'}</div>
             </div>
         );
     }
