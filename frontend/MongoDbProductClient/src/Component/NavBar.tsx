@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../Context/ThemeContext';
+import { useCart } from '../Context/CartContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
     const user = localStorage.getItem('user');
     const userData = user ? JSON.parse(user) : null;
+    const { count } = useCart();
 
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -35,6 +37,12 @@ const Navbar = () => {
                     {user ? (
                         <>
                             <Link to="/my-library" className={theme === 'dark' ? 'text-gray-200 hover:text-blue-300' : 'hover:text-blue-200'}>My Library</Link>
+                            <Link to="/cart" className={theme === 'dark' ? 'text-gray-200 hover:text-blue-300 flex items-center' : 'hover:text-blue-200 flex items-center'}>
+                                Cart
+                                {count > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{count}</span>
+                                )}
+                            </Link>
                             <Link to="/user-info" className={theme === 'dark' ? 'text-gray-200 hover:text-blue-300' : 'hover:text-blue-200'}>User Info</Link>
                             {userData && userData.role === 'Admin' && (
                                 <Link to="/admin" className={`${

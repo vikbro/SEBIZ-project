@@ -4,12 +4,14 @@ import type { Game } from '../Interface/baseInterface';
 import API from '../API/api';
 import { Recommendations } from './Recommendations';
 import { useTheme } from '../Context/ThemeContext';
+import { useCart } from '../Context/CartContext';
 
 const GENRES = ['Action', 'Adventure', 'RPG', 'Shooters', 'Strategy', 'Simulation', 'Sports', 'Puzzle'];
 
 export const GameList = () => {
     const navigate = useNavigate();
     const { theme } = useTheme();
+    const { addToCart } = useCart();
     const [games, setGames] = useState<Game[]>([]);
     const [filteredGames, setFilteredGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
@@ -222,6 +224,12 @@ export const GameList = () => {
                                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
                                     >
                                         View Details
+                                    </button>
+                                    <button
+                                        onClick={() => addToCart(game)}
+                                        className="ml-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+                                    >
+                                        Add to Cart
                                     </button>
                                     {userId === game.createdById && (
                                         <>

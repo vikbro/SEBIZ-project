@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Game, User } from '../Interface/baseInterface';
 import API from '../API/api';
+import { useCart } from '../Context/CartContext';
 
 export const GameDetail = () => {
     const { id } = useParams();
@@ -12,6 +13,7 @@ export const GameDetail = () => {
     const [message, setMessage] = useState('');
     const [isOwner, setIsOwner] = useState(false);
     const [isGameOwned, setIsGameOwned] = useState(false);
+    const { addToCart } = useCart();
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -52,28 +54,9 @@ export const GameDetail = () => {
     }, [user, game]);
 
     const handleAddToLibrary = async () => {
-        if (!user) {
-            setMessage('You need to be logged in to purchase games.');
-            return;
-        }
-        if (!id) return;
-
-        try {
-            if (!game || user.balance < game.price) {
-                setMessage('Insufficient balance to purchase this game.');
-                return;
-            }
-
-            await API.post(`/User/purchase/${id}`);
-            setMessage('Game purchased successfully!');
-
-            // Refetch user data to update balance
-            const { data } = await API.get('/User/me');
-            setUser(data);
-        } catch (error) {
-            setMessage('Failed to purchase game. You may already own it or have insufficient balance.');
-            console.error('Error purchasing game:', error);
-        }
+        if (!game) return;
+        addToCart(game);
+        setMessage('Added to cart.');
     };
 
     const handleDelete = async () => {
@@ -123,7 +106,7 @@ export const GameDetail = () => {
                 <div className="flex space-x-4">
                     {!isOwner && !isGameOwned && (
                         <button onClick={handleAddToLibrary} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
-                            Add to Library
+                            Add to Cart
                         </button>
                     )}
                     {(isOwner || isGameOwned) && game.gameFileName && (

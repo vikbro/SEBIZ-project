@@ -11,6 +11,8 @@ import UserInfo from "./Component/UserInfo"
 import { Play } from "./Component/Play"
 import { AdminPanel } from "./Component/AdminPanel"
 import { ThemeProvider, useTheme } from "./Context/ThemeContext"
+import { CartProvider } from "./Context/CartContext"
+import Cart from './Component/Cart'
 
 function AppContent() {
   const { theme } = useTheme();
@@ -26,6 +28,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<GameList />} />
           <Route path="/game/:id" element={<GameDetail />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/create-game" element={<CreateGame />} />
           <Route path="/edit-game/:id" element={<EditGame />} />
           <Route path="/register" element={<Register />} />
@@ -43,7 +46,9 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
     </ThemeProvider>
   );
 }
